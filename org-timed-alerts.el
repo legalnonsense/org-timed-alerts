@@ -42,7 +42,8 @@ Accepts any properties used by `alert':
     (cl-loop for time in (list timestamp deadline scheduled)
 	     do (when time
 		  (setq time (ts-parse-org time))
-		  (when (not (= 0 (ts-hour time)))
+		  (when (and (not (= 0 (ts-hour time)))
+			     (ts> time (ts-now)))
 		    ;; Add warning timers
 		    (cl-loop for warning in org-timed-alerts-default-warning-times
 			     do (org-timed-alerts--add-timer
@@ -77,18 +78,19 @@ Accepts any properties used by `alert':
     (push (run-at-time time
 		       nil
 		       #'alert-libnotify-notify
-		       :title (or title (get-default :title))
-		       :message message 
-		       :app-icon (or icon (get-default :icon))
-		       :category (or category (get-default :category))
-		       :buffer (or buffer (get-default :buffer))
-		       :mode (or mode (get-default :mode))
-		       :data (or data (get-default :data))
-		       :style (or style (get-default :style))
-		       :severity (or severity (get-default :severity)
-				     :persistent (or persistent (get-default :persistent))
-				     :never-persist (or never (get-default :never-persist))
-				     :id (or id (get-default :id))))
+		       (list 
+			:title (or title (get-default :title))
+			:message message 
+			:app-icon (or icon (get-default :icon))
+			:category (or category (get-default :category))
+			:buffer (or buffer (get-default :buffer))
+			:mode (or mode (get-default :mode))
+			:data (or data (get-default :data))
+			:style (or style (get-default :style))
+			:severity (or severity (get-default :severity)
+				      :persistent (or persistent (get-default :persistent))
+				      :never-persist (or never (get-default :never-persist))
+				      :id (or id (get-default :id)))))
 	  org-timed-alerts--timer-list)))
 
 (defun org-timed-alerts--set-all-timers ()
