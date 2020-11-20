@@ -1,11 +1,8 @@
 ;;; org-timed-alerts.el --- Automatiic org timers for upcoming events -*- lexical-binding: t; -*-
 
-(use-package alert
-  :custom
-  ((alert-fade-time 60)
-   (alert-default-icon nil)))
-
-(setq org-timed-alerts--debugging-timer-list nil)
+(require 'alert)
+(require 'ts)
+(require 'org-ql)
 
 (defcustom org-timed-alerts-files (org-agenda-files)
   "List of org files used to check for events.")
@@ -24,15 +21,14 @@ Accepts any properties used by `alert':
  :never-persist
  :id")
 
-(setq org-timed-alerts-default-warning-times '(-10 -5 -2))
-;; "List of minutes before the event when a warning will be sent.")
+(defcustom org-timed-alerts-default-warning-times '(-10 -5 -2)
+  "List of minutes before the event when a warning will be sent.")
 
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
 
 (defun org-timed-alerts--parser ()
-  "Runs at each org heading and returns a plist of 
-relevant properties to be inserted into the calendar buffer."
+  ":action for `org-ql-select'"
   (-let* (((&alist "ITEM" headline
 		   "TIMESTAMP" timestamp
 		   "DEADLINE" deadline
@@ -46,7 +42,7 @@ relevant properties to be inserted into the calendar buffer."
 	     do (when time
 		  (setq time (ts-parse-org time))
 		  (when (not (= 0 (ts-hour time)))
-		    ;; Add the warning timers
+		    ;; Add warning timers
 		    (cl-loop for warning in org-timed-alerts-default-warning-times
 			     do (org-timed-alerts--add-timer
 				 (->> time
@@ -59,6 +55,7 @@ relevant properties to be inserted into the calendar buffer."
 					 (number-to-string warning)
 					 " MINUTE WARNING")
 				 :title (or category "ALERT")))
+		    ;; Add final event notification
 		    (org-timed-alerts--add-timer
 		     (->> time
 			  (ts-format "%H:%M"))
@@ -72,6 +69,7 @@ relevant properties to be inserted into the calendar buffer."
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
+  "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
   (cl-flet ((get-default (prop)
 			 (plist-get org-timed-alerts-default-alert-props
 				    prop)))
@@ -92,26 +90,26 @@ relevant properties to be inserted into the calendar buffer."
 				     :id (or id (get-default :id))))
 	  org-timed-alerts--timer-list)))
 
-(setq org-timed-alerts-files '("~/.emacs.d/lisp/org-pretty-outline/test.org"))
-
 (defun org-timed-alerts--set-all-timers ()
+  "Run `org-ql' query to get all headings with today's timestamp."
   (setq org-ql-cache (make-hash-table :weakness 'key))
   (org-ql-select org-timed-alerts-files
     '(ts-active :on today)
     :action #'org-timed-alerts--parser))
 
 (defun org-timed-alerts--cancel-all-times ()
+  "Cancel all the timers."
   (cl-loop for timer in org-timed-alerts--timer-list
 	   do (cancel-timer timer)))
 
 (define-minor-mode org-timed-alerts-mode
   "Alert before an event."
   nil
-  " alert"
+  nil
   nil
   (if org-timed-alerts-mode
-      (progn
-	(setq org-timed-alerts--debugging-timer-list nil)
-	(org-timed-alerts--set-all-timers))
-    (org-timed-alerts--cancel-all-times)))
+      (org-timed-alerts--set-all-timers))
+  (org-timed-alerts--cancel-all-times))
+
+(provide 'org-timer-alerts)
 
