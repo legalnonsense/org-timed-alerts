@@ -7,7 +7,8 @@
 (defcustom org-timed-alerts-files (org-agenda-files)
   "List of org files used to check for events.")
 
-(defcustom org-timed-alerts-default-alert-props nil
+(defcustom org-timed-alerts-default-alert-props
+  '(:icon alert-default-icon)
   "Plist used for default properties for alert messages.
 Accepts any properties used by `alert':
  :title 
@@ -75,10 +76,10 @@ Accepts any properties used by `alert':
 				    prop)))
     (push (run-at-time time
 		       nil
-		       #'alert
-		       message 
+		       #'alert-libnotify-notify
 		       :title (or title (get-default :title))
-		       :icon (or icon (get-default :icon))
+		       :message message 
+		       :app-icon (or icon (get-default :icon))
 		       :category (or category (get-default :category))
 		       :buffer (or buffer (get-default :buffer))
 		       :mode (or mode (get-default :mode))
@@ -97,7 +98,7 @@ Accepts any properties used by `alert':
     '(ts-active :on today)
     :action #'org-timed-alerts--parser))
 
-(defun org-timed-alerts--cancel-all-times ()
+(defun org-timed-alerts--cancel-all-timers ()
   "Cancel all the timers."
   (cl-loop for timer in org-timed-alerts--timer-list
 	   do (cancel-timer timer)))
