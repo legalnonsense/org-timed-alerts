@@ -36,18 +36,18 @@ Accepts any properties used by `alert':
 		   "DEADLINE" deadline
 		   "SCHEDULED" scheduled
 		   "TODO" todo
-		   "CATEGORY" category 
-		   "ID" id)
+		   "CATEGORY" category)
 	   (org-entry-properties)))
     (cl-loop for time in (list timestamp deadline scheduled)
 	     do (when time
 		  (setq time (ts-parse-org time))
 		  ;; `ts' returns 0 for hour and minute even
-		  ;; if the org timestamp does not have an
+		  ;; if a timestamp does not have an
 		  ;; associated time. We'll assume that if the
-		  ;; hour is midnight, there is no time of date
+		  ;; time is midnight, there is no time of day
 		  ;; in the timestamp and ignore it. 
 		  (when (and (not (= 0 (ts-hour time)))
+			     (not (= 0 (ts-minute time)))
 			     (ts> time (ts-now)))
 		    ;; Add warning timers
 		    (cl-loop for warning in org-timer-alerts-default-warning-times
@@ -64,48 +64,62 @@ Accepts any properties used by `alert':
 				 :title (or category "ALERT")))
 		    ;; Add final, actual, notification at time of event. 
 		    (org-timer-alerts--add-timer
-		     (->> time
-			  (ts-format "%H:%M"))
+		     (ts-format "%H:%M" time)
 		     (concat (or category "")  ": " (or todo "")
 			     " " (or headline "[Blank headline]")
-			     "\n At " (ts-format "%H:%M" time)
+			     "\n at " (ts-format "%H:%M" time)
 			     "\n " (make-string 500 ? ))
-		     :title (or category "ALERT")))))))
+		     :title category))))))
+
+(defun org-timer-alerts--get-default-val (prop)
+  "Get the default value of PROP from `org-timer-alerts-default-alert-props'."
+  (plist-get org-timer-alerts-default-alert-props
+	     prop))
 
 (defun org-timer-alerts--add-timer (time message &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add to `org-timer-alerts--timer-list'"
-  (cl-flet ((get-default (prop)
-			 (plist-get org-timer-alerts-default-alert-props
-				    prop)))
-    (push (run-at-time time
-		       nil
-		       #'alert-libnotify-notify
-		       (list 
-			:title (or title (get-default :title))
-			:message message 
-			:app-icon (or icon (get-default :icon))
-			:category (or category (get-default :category))
-			:buffer (or buffer (get-default :buffer))
-			:mode (or mode (get-default :mode))
-			:data (or data (get-default :data))
-			:style (or style (get-default :style))
-			:severity (or severity (get-default :severity))
-			:persistent (or persistent (get-default :persistent))
-			:never-persist (or never (get-default :never-persist))
-			:id (or id (get-default :id))))
-	  org-timer-alerts--timer-list)))
+  (push (run-at-time time
+		     nil
+		     #'alert
+		     message
+		     :title (or title
+				(org-timer-alerts--get-default-val :title))
+		     ;; :app-icon (or icon
+		     ;; 		   (org-timer-alerts--get-default-val :icon))
+		     :category (or category
+				   (org-timer-alerts--get-default-val :category))
+		     :buffer (or buffer
+				 (org-timer-alerts--get-default-val :buffer))
+		     :mode (or mode
+			       (org-timer-alerts--get-default-val :mode))
+		     :data (or data
+			       (org-timer-alerts--get-default-val :data))
+		     :style (or style
+				(org-timer-alerts--get-default-val :style))
+		     :severity (or severity
+				   (org-timer-alerts--get-default-val :severity))
+		     :persistent (or persistent
+				     (org-timer-alerts--get-default-val :persistent))
+		     :never-persist (or never-persist
+					(org-timer-alerts--get-default-val :never-persist))
+		     :id (or id
+			     (org-timer-alerts--get-default-val :id)))
+	org-timer-alerts--timer-list))
 
 (defun org-timer-alerts--set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."
-  (setq org-timer-alerts--timer-list nil)
+  ;; Reset existing timers
+  (org-timer-alerts--cancel-all-timers)
   ;; Clear the `org-ql' cache
   (setq org-ql-cache (make-hash-table :weakness 'key))
+  ;; Add timers
   (org-ql-select org-timer-alerts-files
     '(ts-active :on today)
-    :action #'org-timer-alerts--parser))
+    :action #'org-timer-alerts--parser)
+  (message "Org-timer-alerts: Alert timers updated."))
 
 (defun org-timer-alerts--cancel-all-timers ()
   "Cancel all the timers."
@@ -119,8 +133,11 @@ Accepts any properties used by `alert':
   nil
   nil
   (if org-timer-alerts-mode
-      (org-timer-alerts--set-all-timers))
-  (org-timer-alerts--cancel-all-times))
+      (progn 
+	(org-timer-alerts--set-all-timers)
+	(add-hook 'org-agenda-mode-hook #'org-timer-alerts--set-all-timers))
+    (org-timer-alerts--cancel-all-timers)
+    (remove-hook ' org-agenda-mode-hook #'org-timer-alerts--set-all-timers)))
 
 (provide 'org-timer-alerts)
 
