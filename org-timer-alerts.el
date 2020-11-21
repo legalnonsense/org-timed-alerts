@@ -57,17 +57,21 @@ Accepts any properties used by `alert':
 				      (ts-format "%H:%M"))
 				 (concat (or todo "")
 					 " " (or headline "[Blank headline]")
-					 "\n At " (ts-format "%H:%M" time)
-					 "\nTHIS IS YOUR "
+					 "\n at " (ts-format "%H:%M" time)
+					 "\n it is now "
+					 (->> time
+					      (ts-adjust 'minute warning)
+					      (ts-format "%H:%M"))
+					 "\n THIS IS YOUR "
 					 (number-to-string (abs warning))
 					 " MINUTE WARNING")
 				 :title (or category "ALERT")))
 		    ;; Add final, actual, notification at time of event. 
 		    (org-timer-alerts--add-timer
 		     (ts-format "%H:%M" time)
-		     (concat (or category "")  ": " (or todo "")
+		     (concat (or todo "")
 			     " " (or headline "[Blank headline]")
-			     "\n at " (ts-format "%H:%M" time)
+			     "\n starting now at " (ts-format "%H:%M" time)
 			     "\n " (make-string 500 ? ))
 		     :title category))))))
 
