@@ -8,7 +8,7 @@
   "List of org files used to check for events.")
 
 (defcustom org-timer-alerts-default-alert-props
-  '(:icon alert-default-icon)
+  '(:icon "")
 
   "Plist used for default properties for alert messages.
 Accepts any properties used by `alert':
