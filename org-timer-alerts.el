@@ -69,10 +69,11 @@ Accepts any properties used by `alert':
 		    ;; Add final, actual, notification at time of event. 
 		    (org-timer-alerts--add-timer
 		     (ts-format "%H:%M" time)
-		     (concat (or todo "")
-			     " " (or headline "[Blank headline]")
-			     "\n starting now at " (ts-format "%H:%M" time)
-			     "\n " (make-string 500 ? ))
+		     (concat (when todo (concat " " todo))
+			     " " headline
+			     "\n STARTING NOW:"
+			     "\n " (ts-format "%H:%M" time)
+			     "\n\n\n\n\n\n\n\n\n\n")
 		     :title category))))))
 
 (defun org-timer-alerts--get-default-val (prop)
