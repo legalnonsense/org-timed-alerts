@@ -55,16 +55,16 @@ Accepts any properties used by `alert':
 				 (->> time
 				      (ts-adjust 'minute warning)
 				      (ts-format "%H:%M"))
-				 (concat (or todo "")
-					 " " (or headline "[Blank headline]")
+				 (concat (when todo (concat " " todo))
+					 " " headline
 					 "\n at " (ts-format "%H:%M" time)
 					 "\n it is now "
 					 (->> time
 					      (ts-adjust 'minute warning)
 					      (ts-format "%H:%M"))
-					 "\n THIS IS YOUR "
+					 "\n\n *THIS IS YOUR "
 					 (number-to-string (abs warning))
-					 " MINUTE WARNING")
+					 " MINUTE WARNING*")
 				 :title (or category "ALERT")))
 		    ;; Add final, actual, notification at time of event. 
 		    (org-timer-alerts--add-timer
@@ -113,10 +113,11 @@ Accepts any properties used by `alert':
 			     (org-timer-alerts--get-default-val :id)))
 	org-timer-alerts--timer-list))
 
-(defun org-timer-alerts--set-all-timers ()
+(defun org-timer-alerts-set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."
+  (interactive)
   ;; Reset existing timers
-  (org-timer-alerts--cancel-all-timers)
+  (org-timer-alerts-cancel-all-timers)
   ;; Clear the `org-ql' cache
   (setq org-ql-cache (make-hash-table :weakness 'key))
   ;; Add timers
@@ -125,8 +126,9 @@ Accepts any properties used by `alert':
     :action #'org-timer-alerts--parser)
   (message "Org-timer-alerts: Alert timers updated."))
 
-(defun org-timer-alerts--cancel-all-timers ()
+(defun org-timer-alerts-cancel-all-timers ()
   "Cancel all the timers."
+  (interactive)
   (cl-loop for timer in org-timer-alerts--timer-list
 	   do (cancel-timer timer))
   (setq org-timer-alerts--timer-list nil))
@@ -138,10 +140,10 @@ Accepts any properties used by `alert':
   nil
   (if org-timer-alerts-mode
       (progn 
-	(org-timer-alerts--set-all-timers)
-	(add-hook 'org-agenda-mode-hook #'org-timer-alerts--set-all-timers))
-    (org-timer-alerts--cancel-all-timers)
-    (remove-hook ' org-agenda-mode-hook #'org-timer-alerts--set-all-timers)))
+	(org-timer-alerts-set-all-timers)
+	(add-hook 'org-agenda-mode-hook #'org-timer-alerts-set-all-timers))
+    (org-timer-alerts-cancel-all-timers)
+    (remove-hook ' org-agenda-mode-hook #'org-timer-alerts-set-all-timers)))
 
 (provide 'org-timer-alerts)
 
