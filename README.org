@@ -1,1 +1,23 @@
-This package is for personal use. Thrown together quickly. Use are your own risk. 
+
+* Org-timer-alerts
+Receive alerts via =alert.el= for upcoming events in your day. 
+* Use-package
+Here is my use-package declaration:
+#+begin_src emacs-lisp :results silent
+  (use-package org-timer-alerts
+    :custom ((org-timer-alerts-default-warning-times '(-20 -10 -5 -2))
+             (org-timer-alerts-default-alert-props '(:icon ""))
+             (org-timer-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
+             (org-timer-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
+                                                     "it is now %current-time\n "
+                                                     "*THIS IS YOUR %warning-time MINUTE WARNING*")))
+    :init
+    (add-hook 'org-mode #'org-timer-alerts-mode))
+#+end_src
+* How it works
+ 1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
+ 2. For each of these events which has an associated time:
+    1. Create a timer to send an alert at that time via alert.el. This alert will use the string =org-timer-alert-final-alert-string=
+    2. Create warning timers according to the intervals specified in =org-timer-alerts-warning-times= and using the string =org-timer-alert-warning-string=
+ 3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timer-alerts-set-all-timers=.
+

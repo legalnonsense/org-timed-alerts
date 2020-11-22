@@ -1,11 +1,86 @@
 ;;; org-timer-alerts.el --- Automatiic org timers for upcoming events -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2020 Jeff Filipovits
+
+;; Author: Jeff Filipovits <jrfilipovits@gmail.com>
+;; Url: https://github.com/legalnonsense/org-timer-alerts
+;; Version: 0.0.1
+;; Package-Requires: ((emacs "26.1") (org "9.0") (s "1.12.0")
+;;                    (ts "0.2") (org-ql "0.5-pre") (dash "2.16.0"))
+;; Keywords: Org, agenda, calendar, alert
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; Receive alerts for events (i.e., active timestamps, deadlines, schedules) which
+;; have an associated time. Alerts are sent via `alert'.
+;; 
+
+;;; License:
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;;; Installation
+
+;; Install these required packages:
+
+;; + org-ql
+;; + ts
+;; + alert
+
+;; Then put this file in your load-path, and put this in your init
+;; file:
+
+;; (require 'org-timer-alerts)
+
+;;;; Usage
+
+;; Run this command: 
+
+;; `elgantt-open': Open a Gantt Calendar from your agenda files
+
+;;;; Tips
+
+;; + You can customize settings in the `elgantt' group.
+
+;;; License:
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Code:
+
+;;;; Requirements
+
+
 (require 'alert)
 (require 'ts)
 (require 'org-ql)
 
 (defcustom org-timer-alert-final-alert-string
-  "IT IS  %alert-time\n\n%todo %headline"
+  "IT IS %alert-time\n\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
 %headline     : the headline text of the heading
@@ -42,7 +117,7 @@ Accepts any properties used by `alert':
  :never-persist
  :id")
 
-(defcustom org-timer-alerts-default-warning-times '(-10 -5 -2)
+(defcustom org-timer-alerts-warning-times '(-10 -5 -2)
   "List of minutes before an event when a warning will be sent.")
 
 (defvar org-timer-alerts--timer-list nil
@@ -90,7 +165,7 @@ replacement values and return a new string."
 		    ;; Add warning timers
 		    (cl-loop for warning-time
 			     in
-			     org-timer-alerts-default-warning-times
+			     org-timer-alerts-warning-times
 			     do
 			     (let ((replacements
 				    `((todo . ,(or todo ""))
@@ -197,4 +272,3 @@ replacement values and return a new string."
     (remove-hook ' org-agenda-mode-hook #'org-timer-alerts-set-all-timers)))
 
 (provide 'org-timer-alerts)
-
