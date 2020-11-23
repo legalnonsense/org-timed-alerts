@@ -60,7 +60,7 @@ For example, consider the heading:
 <2020-11-23 Mon 15:45>
 #+end_src
 The following string:
-="%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *"=
+=%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *=
 
 Will display a warning that looks like this:
 [[./images/sample-alert.png]]
