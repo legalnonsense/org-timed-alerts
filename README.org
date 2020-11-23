@@ -29,7 +29,7 @@ Use-package declaration with all custom variables set to the default values:
   (use-package org-timed-alerts
     :custom ((org-timed-alerts-files (org-agenda-files))
              (org-timed-alerts-warning-times '(-10 -5))
-             (org-timed-alerts-default-alert-props '(:icon ""))
+             (org-timed-alerts-agenda-hook-p t)
              (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
              (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
                                                      "it is now %current-time\n "
@@ -53,11 +53,11 @@ There is no reason not to use =use-package=, but if you refuse:
 | Custom variable                      | Description                                                                                                                                                                                                                                                                                                                                  | Default                                                                                                      |
 |--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
 | org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                                                                                                                                                  | (org-agenda-files)                                                                                           |
-| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading.                                                                                                                         | '(:icon "") [i.e., don’t use an icon]                                                                        |
+| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading.                                                                                                                         | nil                                                                                                          |
 | org-timed-alerts-warning-times       | List of integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning.  There is no difference between positive and negative numbers, i.e., 10 and -10 both mean to send an alert 10 minutes before the event | '(-10 -5)                                                                                                    |
 | org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
-| org-timed-alerts-agenda-hook-p       | Update pending alerts every time you generate an agenda?                                                                                                                                                                                                                                                                                     | t                                                                                                            |
+| org-timed-alerts-agenda-hook-p       | Update all pending alerts when you generate an agenda?                                                                                                                                                                                                                                                                             | t                                                                                                            |
 
 Note about =org-timed-alerts-default-alert-props=: As stated above, the value of any property can be a function that is run at the underlying org heading. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
 #+begin_src emacs-lisp :results silent
@@ -76,7 +76,7 @@ Or suppose you wanted to customize the icon for an alert depending on the priori
                                                      "/path/to/some/icon"
                                                    "/path/to/some/other/icon"))))
 #+end_src
-If this is above your head, skip it. The defaults are fine. 
+If this is above your head, skip it. 
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -112,7 +112,7 @@ Will use these substitutions
 And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
-Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading. (If no =category= property is set, it will use the file name.)
+Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading. (If no =category= property is set, it will use the filename.)
 
 * How it works
  1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
