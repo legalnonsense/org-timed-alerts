@@ -75,6 +75,7 @@
 ;;;; Requirements
 
 (require 'alert)
+(require 'dash)
 (require 'ts)
 (require 'org-ql)
 
@@ -188,56 +189,54 @@ occurrences of %placeholder with replacement and return a new string."
 	      (category . ,category)))
 	   :title category)))))))
 
-(defun org-timed-alerts--get-default-val (prop)
-  "Get the default value of PROP from `org-timed-alerts-default-alert-props'."
-  (plist-get org-timed-alerts-default-alert-props
-	     prop))
 
 (defun org-timed-alerts--add-timer (time message &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
-  (push (run-at-time time
-		     nil
-		     #'alert
-		     message
-		     :title (or title
-				(org-timed-alerts--get-default-val :title))
-		     :icon (or icon
-			       (org-timed-alerts--get-default-val :icon))
-		     :category (or category
-				   (org-timed-alerts--get-default-val :category))
-		     :buffer (or buffer
-				 (org-timed-alerts--get-default-val :buffer))
-		     :mode (or mode
-			       (org-timed-alerts--get-default-val :mode))
-		     :data (or data
-			       (org-timed-alerts--get-default-val :data))
-		     :style (or style
-				(org-timed-alerts--get-default-val :style))
-		     :severity (or severity
-				   (org-timed-alerts--get-default-val :severity))
-		     :persistent (or persistent
-				     (org-timed-alerts--get-default-val :persistent))
-		     :never-persist (or never-persist
-					(org-timed-alerts--get-default-val :never-persist))
-		     :id (or id
-			     (org-timed-alerts--get-default-val :id)))
-	org-timed-alerts--timer-list))
+  (cl-flet ((get-default (prop)
+			 (plist-get org-timed-alerts-default-alert-props prop)))
+    (push (run-at-time time
+		       nil
+		       #'alert
+		       message
+		       :title (or title
+				  (get-default :title))
+		       :icon (or icon
+				 (get-default :icon))
+		       :category (or category
+				     (get-default :category))
+		       :buffer (or buffer
+				   (get-default :buffer))
+		       :mode (or mode
+				 (get-default :mode))
+		       :data (or data
+				 (get-default :data))
+		       :style (or style
+				  (get-default :style))
+		       :severity (or severity
+				     (get-default :severity))
+		       :persistent (or persistent
+				       (get-default :persistent))
+		       :never-persist (or never-persist
+					  (get-default :never-persist))
+		       :id (or id
+			       (get-default :id)))
+	  org-timed-alerts--timer-list)))
 
-(defun org-timed-alerts-set-all-timers ()
-  "Run `org-ql' query to get all headings with today's timestamp."
-  (interactive)
-  ;; Reset existing timers
-  (org-timed-alerts-cancel-all-timers)
-  ;; Clear the `org-ql' cache
-  (setq org-ql-cache (make-hash-table :weakness 'key))
-  ;; Add timers
-  (org-ql-select org-timed-alerts-files
-    '(ts-active :on today)
-    :action #'org-timed-alerts--parser)
-  (message "org-timed-alerts: Alert timers updated."))
+  (defun org-timed-alerts-set-all-timers ()
+    "Run `org-ql' query to get all headings with today's timestamp."
+    (interactive)
+    ;; Reset existing timers
+    (org-timed-alerts-cancel-all-timers)
+    ;; Clear the `org-ql' cache
+    (setq org-ql-cache (make-hash-table :weakness 'key))
+    ;; Add timers
+    (org-ql-select org-timed-alerts-files
+      '(ts-active :on today)
+      :action #'org-timed-alerts--parser)
+    (message "org-timed-alerts: Alert timers updated."))
 
 (defun org-timed-alerts-cancel-all-timers ()
   "Cancel all the timers."
