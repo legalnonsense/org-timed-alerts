@@ -11,7 +11,8 @@ Ever look at your clock 10 minutes before a scheduled phone call, keep working o
 =Org-timer-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
 
 ** Usage
-*** Set up =alert.el=: https://github.com/jwiegley/alert
+*** Set up =alert.el=
+/See/ https://github.com/jwiegley/alert
 *** Installation
 Clone this repository into your load path.
 #+begin_src emacs-lisp :results silent
