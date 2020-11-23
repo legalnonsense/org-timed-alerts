@@ -148,6 +148,11 @@ Which moves up to the root header and returns that headline."
   :type '(plist :key-type sexp :value-type sexp)
   :group 'org-timed-alerts)
 
+(defcustom org-timed-alerts-agenda-hook-p t
+  "Update all alerts whenever you generate an agenda?"
+  :type 'boolean
+  :group 'org-timed-alerts)
+
 (defcustom org-timed-alerts-warning-times '(-10 -5)
   "List of minutes before an event when a warning will be sent.
 There is no difference between positive and negative values,
@@ -294,8 +299,10 @@ if val is a function, call it.  Otherwise return val."
   (if org-timed-alerts-mode
       (progn 
 	(org-timed-alerts-set-all-timers)
-	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+	(when org-timed-alerts-agenda-hook-p
+	  (add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
     (org-timed-alerts-cancel-all-timers)
-    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+    (when org-timed-alerts-agenda-hook-p
+      (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))))
 
 (provide 'org-timed-alerts)
