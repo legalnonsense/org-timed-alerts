@@ -6,9 +6,11 @@ Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
 Ever look at your clock 10 minutes before a scheduled phone call, keep working on something else, and then not look at your clock until 2 minutes after the phone call was supposed to begin?
 
-=org-timed-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time of day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert. Alert messages are easily customizable. 
+I do it all the time. 
 
-=org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
+=org-timed-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time-of-day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert. Alert messages are customizable. 
+
+=org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. You can turn this off by setting =org-timed-alerts-agenda-hook-p= to nil. If you do that, you can update manually with =org-timed-alerts-set-all-timers= or find another suitable hook. 
 
 ** Usage
 *** Install the dependencies:
@@ -55,12 +57,15 @@ There is no reason not to use =use-package=, but if you refuse:
 | org-timed-alerts-warning-times       | List of integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning.  There is no difference between positive and negative numbers, i.e., 10 and -10 both mean to send an alert 10 minutes before the event | '(-10 -5)                                                                                                    |
 | org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
+| org-timed-alerts-agenda-hook-p       | Update pending alerts every time you generate an agenda?                                                                                                                                                                                                                                                                                     | t                                                                                                            |
 
-Note about =org-timed-alerts-default-alert-props=: As stated, the value of any property can be a function that is run at the underlying org heading. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
+Note about =org-timed-alerts-default-alert-props=: As stated above, the value of any property can be a function that is run at the underlying org heading. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
 #+begin_src emacs-lisp :results silent
   (setq org-timed-alerts-default-alert-props '(:title 
                                                (lambda () (save-excursion
+                                                            ;; Move to the root heading
                                                             (while (org-up-heading-safe))
+                                                            ;; Return its headline, without tags, todo, etc.
                                                             (org-get-heading t t t t)))))
 #+end_src
 Or suppose you wanted to customize the icon for an alert depending on the priority of the heading:
@@ -71,8 +76,7 @@ Or suppose you wanted to customize the icon for an alert depending on the priori
                                                      "/path/to/some/icon"
                                                    "/path/to/some/other/icon"))))
 #+end_src
-If this is above your head, skip it. Otherwise, you get the point. 
-
+If this is above your head, skip it. The defaults are fine. 
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -126,4 +130,3 @@ It is possible that these packages provide this (or additional) functionality. I
 =org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el.
 
 =org-wild-notify=. /See/ https://github.com/akhramov/org-wild-notifier.el.
-
