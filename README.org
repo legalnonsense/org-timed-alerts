@@ -22,7 +22,7 @@ Clone this repository into your load path.
   git clone https://github.com/legalnonsense/org-timed-alerts.git
 #+end_src
 *** Use-package example
-Use-package declaration with all custom variables set to the default values
+Use-package declaration with all custom variables set to the default values:
 #+begin_src emacs-lisp :results silent
   (use-package org-timed-alerts
     :custom ((org-timed-alerts-files (org-agenda-files))
@@ -46,7 +46,6 @@ There is no reason not to use =use-package=, but if you refuse:
     ;; or skip the hook and:
     (org-timed-alerts-mode))
 #+end_src
-
 ** Customization
 
 | Custom variable                      | Description                                                                                                                                                                                                                                                                                                                                  | Default                                                                                                      |
