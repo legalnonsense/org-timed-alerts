@@ -272,6 +272,7 @@ if val is a function, call it.  Otherwise return val."
 	 :id (or id (org-timed-alerts--get-default-prop :id)))
 	org-timed-alerts--timer-list))
 
+;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."
   (interactive)
@@ -284,6 +285,7 @@ if val is a function, call it.  Otherwise return val."
     :action #'org-timed-alerts--parser)
   (message "Org-timed-alerts: timers updated."))
 
+;;;###autoload 
 (defun org-timed-alerts-cancel-all-timers ()
   "Cancel all the timers."
   (interactive)
@@ -291,6 +293,7 @@ if val is a function, call it.  Otherwise return val."
 	   do (cancel-timer timer))
   (setq org-timed-alerts--timer-list nil))
 
+;;;###autoload 
 (define-minor-mode org-timed-alerts-mode
   "Get alerts before orgmode events."
   nil
@@ -302,7 +305,13 @@ if val is a function, call it.  Otherwise return val."
 	(when org-timed-alerts-agenda-hook-p
 	  (add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
     (org-timed-alerts-cancel-all-timers)
-    (when org-timed-alerts-agenda-hook-p
-      (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))))
+    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+
+;; Footer
 
 (provide 'org-timed-alerts)
+
+;;; org-timed-alerts.el ends here
+
+
+
