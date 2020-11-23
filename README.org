@@ -1,14 +1,14 @@
 
 * WORK IN PROGRESS
 If you've stumbled upon this, you've done it before I've told anyone about this. In progress. Use at your own risk. 
-* Org-timer-alerts
+* org-timed-alerts
 Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
 Ever look at your clock 10 minutes before a scheduled phone call, keep working on something else, and then not look at your clock until 2 minutes after the phone call was supposed to begin?
 
-=Org-timer-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time of day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert.
+=org-timed-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time of day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert.
 
-=Org-timer-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
+=org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
 
 ** Usage
 *** Set up =alert.el=
@@ -16,39 +16,39 @@ Ever look at your clock 10 minutes before a scheduled phone call, keep working o
 *** Installation
 Clone this repository into your load path.
 #+begin_src emacs-lisp :results silent
-  git clone https://github.com/legalnonsense/org-timer-alerts.git
+  git clone https://github.com/legalnonsense/org-timed-alerts.git
 #+end_src
 *** Use-package example
 #+begin_src emacs-lisp :results silent
-    (use-package org-timer-alerts
-      :custom ((org-timer-alerts-default-warning-times '(-20 -10 -5 -2))
-               (org-timer-alerts-default-alert-props '(:icon ""))
-               (org-timer-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
-               (org-timer-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
+    (use-package org-timed-alerts
+      :custom ((org-timed-alerts-default-warning-times '(-20 -10 -5 -2))
+               (org-timed-alerts-default-alert-props '(:icon ""))
+               (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
+               (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
                                                        "it is now %current-time\n "
                                                        "*THIS IS YOUR %warning-time MINUTE WARNING*")))
       ;; I hate the :hook syntax
       :init
-      (add-hook 'org-mode #'org-timer-alerts-mode))
+      (add-hook 'org-mode #'org-timed-alerts-mode))
 #+end_src
 *** Without use-package
 #+begin_src emacs-lisp :results silent
-  (require 'org-timer-alerts)
-  (add-hook 'org-mode #'org-timer-alerts-mode))
+  (require 'org-timed-alerts)
+  (add-hook 'org-mode #'org-timed-alerts-mode))
   ;; or skip the hook and
-  (org-timer-alerts-mode)
+  (org-timed-alerts-mode)
 #+end_src
 ** Customization
 
 | Custom variable                      | Description                                                                                                                                                                                                    | Default                                                                                                  |
 |--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------|
-| org-timer-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                        |
-| org-timer-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                    |
-| org-timer-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                |
-| org-timer-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                        |
-| org-timer-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
+| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                        |
+| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                    |
+| org-timed-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                |
+| org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                        |
+| org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
 *** alert strings
-=org-timer-alert-final-alert-string= and =org-timer-alert-warning-string= are strings that allow the following substitutions:
+=org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
 | string        | substitution                                                              |
 |---------------+---------------------------------------------------------------------------|
@@ -78,9 +78,9 @@ The title of the alert defaults to the CATEGORY property of the org heading, or 
 * How it works
  1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
  2. For each of these events which has an associated time:
-    1. Create a timer to send an alert at that time via alert.el. This alert will use the string =org-timer-alert-final-alert-string=
-    2. Create warning timers according to the intervals specified in =org-timer-alerts-warning-times= and using the string =org-timer-alert-warning-string=
- 3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timer-alerts-set-all-timers=. You can disable all timers with =org-timer-alerts-cancel-all-timers=.
+    1. Create a timer to send an alert at that time via alert.el. This alert will use the string =org-timed-alert-final-alert-string=
+    2. Create warning timers according to the intervals specified in =org-timed-alerts-warning-times= and using the string =org-timed-alert-warning-string=
+ 3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timed-alerts-set-all-timers=. You can disable all timers with =org-timed-alerts-cancel-all-timers=.
 * Other efforts
 This pacakge is meant to do what I want and and nothing more. Here are other efforts that may be suitable for a person who is not me:
 
