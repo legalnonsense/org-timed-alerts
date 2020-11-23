@@ -297,7 +297,7 @@ if val is a function, call it.  Otherwise return val."
   " alerts"
   nil
   (if org-timed-alerts-mode
-      (progn 
+      (progn
 	(org-timed-alerts-set-all-timers)
 	(when org-timed-alerts-agenda-hook-p
 	  (add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
