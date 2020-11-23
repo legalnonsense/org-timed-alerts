@@ -1,6 +1,4 @@
 
-* WORK IN PROGRESS
-If you've stumbled upon this, you've done it before I've told anyone about this. In progress. Use at your own risk. 
 * org-timed-alerts.el
 Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
