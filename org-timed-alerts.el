@@ -123,9 +123,11 @@ Accepts any properties used by `alert':
   "Internal list of timer objects.")
 
 (defun org-timed-alert--string-substitute (string map)
-  "MAP is an alist in the form of '((\"%placeholder\" . replacement))
-STRING is the original string. Replace all %placeholders with their 
-replacement values and return a new string."
+  "MAP is an alist in the form of '((placeholder . replacement))
+STRING is the original string. PLACEHOLDER is a symbol that will
+be converted to a string prefixed with a %: \"%PLACEHOLDER\". 
+REPLACEMENT can be a string, a number, or a symbol. Replace all
+occurrences of %placeholder with replacement and return a new string."
   (cl-loop for (holder . replacement) in map
 	   when replacement
 	   do (setq string (replace-regexp-in-string
@@ -150,55 +152,41 @@ replacement values and return a new string."
 		   "TODO" todo
 		   "CATEGORY" category)
 	   (org-entry-properties)))
-    (cl-loop for time in (list timestamp deadline scheduled)
-	     do (when time
-		  (setq time (ts-parse-org time))
-		  ;; `ts' returns 0 for hour and minute even
-		  ;; if a timestamp does not have an
-		  ;; associated time. We'll assume that if the
-		  ;; time is midnight, there is no time of day
-		  ;; in the timestamp and ignore it. 
-		  (when (and (or (not (= 0 (ts-hour time)))
-				 (not (= 0 (ts-minute time))))
-			     (ts> time (ts-now)))
-		    ;; Add warning timers
-		    (cl-loop for warning-time
-			     in
-			     org-timed-alerts-warning-times
-			     do
-			     (let ((replacements
-				    `((todo . ,(or todo ""))
-				      (headline . ,(or headline ""))
-				      (current-time .
-						    ,(->> time
-							  (ts-adjust
-							   'minute
-							   warning-time)
-							  (ts-format "%H:%M")))
-				      (alert-time . ,(ts-format "%H:%M" time))
-				      (warning-time . ,(abs warning-time))
-				      (category . ,category))))
-			       ;;(when (ts> (ts-parse alert-time) (ts-now))
-			       (org-timed-alerts--add-timer
-				(alist-get 'current-time replacements)
-				(org-timed-alert--string-substitute
-				 org-timed-alert-warning-string
-				 replacements)
-				:title (or category "ALERT"))))
-		    ;; Add final, actual, notification at time of event. 
-		    (let ((replacements
-			   `((todo . ,(or todo ""))
-			     (headline . ,(or headline ""))
-			     (current-time . ,(ts-format "%H:%M" time))
-			     (alert-time . ,(ts-format "%H:%M" time))
-			     (warning-time . 0)
-			     (category . ,category))))
-		      (org-timed-alerts--add-timer
-		       (alist-get 'current-time replacements)
-		       (org-timed-alert--string-substitute
-			org-timed-alert-final-alert-string
-			replacements)
-		       :title (or category "ALERT"))))))))
+    (cl-loop
+     for time in (list timestamp deadline scheduled)
+     when time
+     do
+     (setq time (ts-parse-org time))
+     ;; `ts' returns 0 for hour and minute even
+     ;; if a timestamp does not have an
+     ;; associated time of day.  We'll assume that
+     ;; if the time is midnight, there is no time of day
+     ;; specification. 
+     (when (and (or (not (= 0 (ts-hour time)))
+		    (not (= 0 (ts-minute time))))
+		(ts> time (ts-now)))
+       (cl-loop
+	with current-time = nil
+	for warning-time in (cl-pushnew 0 org-timed-alerts-warning-times)
+	do
+	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
+	(when (ts>
+	       current-time
+	       (ts-now))
+	  (setq current-time (ts-format "%H:%M" current-time))
+	  (org-timed-alerts--add-timer
+	   current-time
+	   (org-timed-alert--string-substitute
+	    (if (= warning-time 0)
+		org-timed-alert-final-alert-string
+	      org-timed-alert-warning-string)
+	    `((todo . ,(or todo ""))
+	      (headline . ,headline)
+	      (current-time . ,current-time)
+	      (alert-time . ,(ts-format "%H:%M" time))
+	      (warning-time . ,(abs warning-time))
+	      (category . ,category)))
+	   :title category)))))))
 
 (defun org-timed-alerts--get-default-val (prop)
   "Get the default value of PROP from `org-timed-alerts-default-alert-props'."
@@ -216,8 +204,8 @@ replacement values and return a new string."
 		     message
 		     :title (or title
 				(org-timed-alerts--get-default-val :title))
-		     :app-icon (or icon
-				   (org-timed-alerts--get-default-val :icon))
+		     :icon (or icon
+			       (org-timed-alerts--get-default-val :icon))
 		     :category (or category
 				   (org-timed-alerts--get-default-val :category))
 		     :buffer (or buffer
