@@ -1,7 +1,7 @@
 
 * WORK IN PROGRESS
 If you've stumbled upon this, you've done it before I've told anyone about this. In progress. Use at your own risk. 
-* org-timed-alerts
+* org-timed-alerts.el
 Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
 Ever look at your clock 10 minutes before a scheduled phone call, keep working on something else, and then not look at your clock until 2 minutes after the phone call was supposed to begin?
