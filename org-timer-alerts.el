@@ -80,7 +80,7 @@
 (require 'org-ql)
 
 (defcustom org-timer-alert-final-alert-string
-  "IT IS %alert-time\n\n%todo %headline"
+  "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
 %headline     : the headline text of the heading
@@ -117,7 +117,7 @@ Accepts any properties used by `alert':
  :never-persist
  :id")
 
-(defcustom org-timer-alerts-warning-times '(-10 -5 -2)
+(defcustom org-timer-alerts-warning-times '(-10 -5)
   "List of minutes before an event when a warning will be sent.")
 
 (defvar org-timer-alerts--timer-list nil

@@ -1,4 +1,6 @@
 
+* WORK IN PROGRESS
+If you've stumbled upon this, you've done it before I've told anyone about this. In progress. Use at your own risk. 
 * Org-timer-alerts
 Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
@@ -40,16 +42,19 @@ Clone this repository into your load path.
 | org-timer-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                        |
 | org-timer-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                    |
 | org-timer-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                |
-| org-timer-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\n%todo %headline"                                                                   |
-| org-timer-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n *THIS IS YOUR %warning-time MINUTE WARNING*" |
+| org-timer-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                        |
+| org-timer-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
 *** alert strings
 =org-timer-alert-final-alert-string= and =org-timer-alert-warning-string= are strings that allow the following substitutions:
-%todo :: the TODO state of the the heading, if any
-%headline :: the headline text of the heading
-%alert-time :: the time of the event
-%warning-time :: the number of minutes before the event the warning will be shown
-%current-time :: the time the alert is actually sent to the user
-%category :: the category property of the org heading, or the name of the file if none
+
+| string        | substitution                                                              |
+|---------------+---------------------------------------------------------------------------|
+| %todo         | the TODO state of the the heading, if any                                 |
+| %headline     | the headline text of the heading                                          |
+| %alert-time   | the time of the event                                                     |
+| %warning-time | the number of minutes before the event the warning will be shown          |
+| %current-time | the time the alert is actually sent to the user                           |
+| %category     | the category property of the org heading, or the name of the file if none |
 
 For example, consider the heading:
 #+begin_src org 
