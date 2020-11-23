@@ -35,16 +35,18 @@ Clone this repository into your load path.
 #+end_src
 *** Without use-package
 #+begin_src emacs-lisp :results silent
-  (require 'org-timed-alerts)
-  (add-hook 'org-mode-hook #'org-timed-alerts-mode))
-  ;; or skip the hook and:
-  (org-timed-alerts-mode)
+  (eval-after-load 'org
+    (require 'org-timed-alerts)
+    (add-hook 'org-mode-hook #'org-timed-alerts-mode)
+    ;; or skip the hook and:
+    (org-timed-alerts-mode))
 #+end_src
+
 ** Customization
 
 | Custom variable                      | Description                                                                                                                                                                                                    | Default                                                                                                      |
 |--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
-| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                            |
+| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files)                                                                                           |
 | org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                        |
 | org-timed-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                    |
 | org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
@@ -84,14 +86,12 @@ The title of the alert defaults to the CATEGORY property of the org heading, or 
     2. Create warning timers according to the intervals specified in =org-timed-alerts-warning-times= and using the string =org-timed-alert-warning-string=
  3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timed-alerts-set-all-timers=. You can disable all timers with =org-timed-alerts-cancel-all-timers=.
 * Other efforts
-This pacakge is meant to do what I want and and nothing more. Here are other efforts that may be suitable for a person who is not me:
+This pacakge is meant to do what I want and and nothing more. It is possible that these packages provide this functionality and I did not try hard enough. They may be suitable for a person who is not me:
 
 =org-alert=. /See/ https://github.com/spegoraro/org-alert.
 
-=org-notify= https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el
+=org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el.
 
-=org-wild-notify= https://github.com/akhramov/org-wild-notifier.el
+=org-wild-notify=. /See/ https://github.com/akhramov/org-wild-notifier.el.
 
-* The code
-It's a mess. Don't like it? Fix it!
 
