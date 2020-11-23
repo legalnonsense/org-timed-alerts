@@ -123,7 +123,7 @@ Unless the =:title= property is overridden by =org-timed-alerts-default-alert-pr
 * Other efforts
 This pacakge is meant to do what I want and and nothing more; I tried to abstract a bit so others might find it useful. 
 
-It is possible that these packages provide this (or additional) functionality. I did not do extensive testing before writing my own. They may be suitable for your purposes:
+It is possible that these packages provide this (or additional) functionality. I did not spend much time with them before striking out on my own. They may be suitable for your purposes:
 
 =org-alert=. /See/ https://github.com/spegoraro/org-alert.
 
