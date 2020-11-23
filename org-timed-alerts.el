@@ -14,8 +14,8 @@
 ;;; Commentary:
 
 ;; Receive alerts for events (i.e., active timestamps, deadlines, schedules) which
-;; have an associated time. Alerts are sent via `alert'.
-;; 
+;; have an associated time of day timestamp. Alerts are sent via `alert'. Timers
+;; are updated every time you load your agenda. 
 
 ;;; License:
 
@@ -37,23 +37,26 @@
 ;; Install these required packages:
 
 ;; + org-ql
-;; + ts
+;; + ts.el
 ;; + alert
+;; + dash.el
 
 ;; Then put this file in your load-path, and put this in your init
-;; file:
+;; file. See the README for a use-package declaration. 
 
-;; (require 'org-timed-alerts)
+;;   (eval-after-load 'org
+;;     (require 'org-timed-alerts))
 
 ;;;; Usage
 
-;; Run this command: 
-
-;; `elgantt-open': Open a Gantt Calendar from your agenda files
+;; Type M-x org-timed-alerts-mode RET to enable the package. 
+;; 
+;; To update all timers, open your org-agenda or type:
+;; M-x org-timed-alerts-set-all-timers RET
 
 ;;;; Tips
 
-;; + You can customize settings in the `elgantt' group.
+;; You can customize settings in the `org-timed-alerts' group.
 
 ;;; License:
 
@@ -79,6 +82,13 @@
 (require 'ts)
 (require 'org-ql)
 
+(defgroup org-timed-alerts nil
+  "org-timed-alerts options"
+  :tag " org-timed-alerts"
+  :group 'org
+  :group 'org-timed-alerts
+  :prefix "org-timed-alerts-")
+
 (defcustom org-timed-alert-final-alert-string
   "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
@@ -87,7 +97,9 @@
 %alert-time   : the time of the event
 %warning-time : the number of minutes before the event the warning will be shown
 %current-time : the time the alert is sent to the user
-%category     : the category property of the org heading, or the name of the file if none")
+%category     : the category property of the org heading, or the name of the file if none"
+  :type 'string
+  :group 'org-timed-alerts)
 
 (defcustom org-timed-alert-warning-string
   "%todo %headline\n at %alert-time\n it is now %current-time\n *THIS IS YOUR %warning-time MINUTE WARNING*"
@@ -97,10 +109,14 @@
 %alert-time   : the time of the event
 %warning-time : the number of minutes before the event the warning will be shown
 %current-time : the time the alert is sent to the user
-%category     : the category property of the org heading, or the name of the file if none")
+%category     : the category property of the org heading, or the name of the file if none"
+  :type 'string
+  :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-files (org-agenda-files)
-  "List of org files used to check for events.")
+  "File or list of org files used to check for events."
+  :type '(list file)
+  :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-default-alert-props
   '(:icon "")
@@ -115,10 +131,17 @@ Accepts any properties used by `alert':
  :style
  :persistent
  :never-persist
- :id")
+ :id"
+  :type '(plist :key-type sexp :value-type sexp)
+  :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-warning-times '(-10 -5)
-  "List of minutes before an event when a warning will be sent.")
+  "List of minutes before an event when a warning will be sent.
+There is no difference between positive and negative values,
+i.e., -10 and 10 both mean to send an alert 10 minutes before
+the event."
+  :type '(list integer)
+  :group 'org-timed-alerts)
 
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
@@ -189,7 +212,6 @@ occurrences of %placeholder with replacement and return a new string."
 	      (category . ,category)))
 	   :title category)))))))
 
-
 (defun org-timed-alerts--add-timer (time message &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
@@ -197,46 +219,32 @@ occurrences of %placeholder with replacement and return a new string."
   "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
   (cl-flet ((get-default (prop)
 			 (plist-get org-timed-alerts-default-alert-props prop)))
-    (push (run-at-time time
-		       nil
-		       #'alert
-		       message
-		       :title (or title
-				  (get-default :title))
-		       :icon (or icon
-				 (get-default :icon))
-		       :category (or category
-				     (get-default :category))
-		       :buffer (or buffer
-				   (get-default :buffer))
-		       :mode (or mode
-				 (get-default :mode))
-		       :data (or data
-				 (get-default :data))
-		       :style (or style
-				  (get-default :style))
-		       :severity (or severity
-				     (get-default :severity))
-		       :persistent (or persistent
-				       (get-default :persistent))
+    (push (run-at-time time nil #'alert message
+		       :title (or title (get-default :title))
+		       :icon (or icon (get-default :icon))
+		       :category (or category (get-default :category))
+		       :buffer (or buffer (get-default :buffer))
+		       :mode (or mode (get-default :mode))
+		       :data (or data (get-default :data))
+		       :style (or style (get-default :style))
+		       :severity (or severity (get-default :severity))
+		       :persistent (or persistent (get-default :persistent))
 		       :never-persist (or never-persist
 					  (get-default :never-persist))
-		       :id (or id
-			       (get-default :id)))
+		       :id (or id (get-default :id)))
 	  org-timed-alerts--timer-list)))
 
-  (defun org-timed-alerts-set-all-timers ()
-    "Run `org-ql' query to get all headings with today's timestamp."
-    (interactive)
-    ;; Reset existing timers
-    (org-timed-alerts-cancel-all-timers)
-    ;; Clear the `org-ql' cache
-    (setq org-ql-cache (make-hash-table :weakness 'key))
-    ;; Add timers
-    (org-ql-select org-timed-alerts-files
-      '(ts-active :on today)
-      :action #'org-timed-alerts--parser)
-    (message "org-timed-alerts: Alert timers updated."))
+(defun org-timed-alerts-set-all-timers ()
+  "Run `org-ql' query to get all headings with today's timestamp."
+  (interactive)
+  (org-timed-alerts-cancel-all-timers)
+  ;; Clear the `org-ql' cache
+  ;; (Don't know if necessary but needed for testing.)
+  (setq org-ql-cache (make-hash-table :weakness 'key))
+  (org-ql-select org-timed-alerts-files
+    '(ts-active :on today)
+    :action #'org-timed-alerts--parser)
+  (message "Org-timed-alerts: timers updated."))
 
 (defun org-timed-alerts-cancel-all-timers ()
   "Cancel all the timers."
@@ -246,9 +254,9 @@ occurrences of %placeholder with replacement and return a new string."
   (setq org-timed-alerts--timer-list nil))
 
 (define-minor-mode org-timed-alerts-mode
-  "Alert before an event."
+  "Get alerts before orgmode events."
   nil
-  nil
+  " alerts"
   nil
   (if org-timed-alerts-mode
       (progn 
