@@ -11,7 +11,7 @@ Ever look at your clock 10 minutes before a scheduled phone call, keep working o
 =org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
 
 ** Usage
-*** Install the dependencies
+*** Install the dependencies:
 - alert :: https://github.com/jwiegley/alert.
 - dash.el :: https://github.com/magnars/dash.el
 - org-ql :: https://github.com/alphapapa/org-ql.
@@ -108,5 +108,4 @@ It is possible that these packages provide this (or additional) functionality. I
 =org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el.
 
 =org-wild-notify=. /See/ https://github.com/akhramov/org-wild-notifier.el.
-
 
