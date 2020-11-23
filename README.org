@@ -35,6 +35,8 @@ Clone this repository into your load path.
 #+begin_src emacs-lisp :results silent
   (require 'org-timer-alerts)
   (add-hook 'org-mode #'org-timer-alerts-mode))
+  ;; or skip the hook and
+  (org-timer-alerts-mode)
 #+end_src
 ** Customization
 
