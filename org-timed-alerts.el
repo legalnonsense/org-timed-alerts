@@ -131,7 +131,18 @@ Accepts any properties used by `alert':
  :style
  :persistent
  :never-persist
- :id"
+ :id
+The value of each key should be whatever value is acceptable
+to `alert'.  Alternatively, the value may be a function with 
+no arguments which runs at each org heading and returns the 
+appropriate val.
+
+For example to set the title of each alert
+to the root heading, you could use:
+  '(:title (lambda ()
+	     (save-excursion
+	       (while (org-up-heading-safe))
+	       (org-get-heading t t t t)))"
   :type '(plist :key-type sexp :value-type sexp)
   :group 'org-timed-alerts)
 
@@ -166,6 +177,16 @@ occurrences of %placeholder with replacement and return a new string."
 			      (_ ""))
 			    string))
 	   finally return string))
+
+(defun org-timed-alerts--get-default-prop (prop)
+  "Get val for PROP from `org-timed-alerts-default-alert-props'
+if val is a function, call it.  Otherwise return val."
+  (let ((val (plist-get
+	      org-timed-alerts-default-alert-props
+	      prop)))
+    (pcase val
+      ((pred functionp) (funcall val))
+      (_ val))))
 
 (defun org-timed-alerts--parser ()
   ":action for `org-ql-select'"
@@ -210,29 +231,29 @@ occurrences of %placeholder with replacement and return a new string."
 	      (alert-time . ,(ts-format "%H:%M" time))
 	      (warning-time . ,(abs warning-time))
 	      (category . ,category)))
-	   :title category)))))))
+	   :title (or (org-timed-alerts--get-default-prop
+		       :title)
+		      category))))))))
 
 (defun org-timed-alerts--add-timer (time message &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
-  (cl-flet ((get-default (prop)
-			 (plist-get org-timed-alerts-default-alert-props prop)))
-    (push (run-at-time time nil #'alert message
-		       :title (or title (get-default :title))
-		       :icon (or icon (get-default :icon))
-		       :category (or category (get-default :category))
-		       :buffer (or buffer (get-default :buffer))
-		       :mode (or mode (get-default :mode))
-		       :data (or data (get-default :data))
-		       :style (or style (get-default :style))
-		       :severity (or severity (get-default :severity))
-		       :persistent (or persistent (get-default :persistent))
-		       :never-persist (or never-persist
-					  (get-default :never-persist))
-		       :id (or id (get-default :id)))
-	  org-timed-alerts--timer-list)))
+  (push (run-at-time time nil #'alert message
+		     :title (or title (org-timed-alerts--get-default-prop :title))
+		     :icon (or icon (org-timed-alerts--get-default-prop :icon))
+		     :category (or category (org-timed-alerts--get-default-prop :category))
+		     :buffer (or buffer (org-timed-alerts--get-default-prop :buffer))
+		     :mode (or mode (org-timed-alerts--get-default-prop :mode))
+		     :data (or data (org-timed-alerts--get-default-prop :data))
+		     :style (or style (org-timed-alerts--get-default-prop :style))
+		     :severity (or severity (org-timed-alerts--get-default-prop :severity))
+		     :persistent (or persistent (org-timed-alerts--get-default-prop :persistent))
+		     :never-persist (or never-persist
+					(org-timed-alerts--get-default-prop :never-persist))
+		     :id (or id (org-timed-alerts--get-default-prop :id)))
+	org-timed-alerts--timer-list))
 
 (defun org-timed-alerts-set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."

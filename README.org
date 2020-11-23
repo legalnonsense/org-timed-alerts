@@ -51,10 +51,28 @@ There is no reason not to use =use-package=, but if you refuse:
 | Custom variable                      | Description                                                                                                                                                                                                                                                                                                                                  | Default                                                                                                      |
 |--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
 | org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                                                                                                                                                  | (org-agenda-files)                                                                                           |
-| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                                                                                                                                                        | '(:icon "") [i.e., don’t use an icon]                                                                        |
+| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading.                                                                                                                         | '(:icon "") [i.e., don’t use an icon]                                                                        |
 | org-timed-alerts-warning-times       | List of integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning.  There is no difference between positive and negative numbers, i.e., 10 and -10 both mean to send an alert 10 minutes before the event | '(-10 -5)                                                                                                    |
 | org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
+
+Note about =org-timed-alerts-default-alert-props=: As stated, the value of any property can be a function that is run at the underlying org heading. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
+#+begin_src emacs-lisp :results silent
+  (setq org-timed-alerts-default-alert-props '(:title 
+                                               (lambda () (save-excursion
+                                                            (while (org-up-heading-safe))
+                                                            (org-get-heading t t t t)))))
+#+end_src
+Or suppose you wanted to customize the icon for an alert depending on the priority of the heading:
+#+begin_src emacs-lisp :results silent
+  (setq org-timed-alerts-default-alert-props '(:icon 
+                                               (lambda ()
+                                                 (if (string= "A" (org-entry-get (point) "PRIORITY"))
+                                                     "/path/to/some/icon"
+                                                   "/path/to/some/other/icon"))))
+#+end_src
+If this is above your head, skip it. Otherwise, you get the point. 
+
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -90,7 +108,7 @@ Will use these substitutions
 And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
-The title of the alert defaults to the CATEGORY property of the org heading, or the file name if no category is specified.
+Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading. (If no =category= property is set, it will use the file name.)
 
 * How it works
  1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
