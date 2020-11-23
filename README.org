@@ -78,6 +78,14 @@ The title of the alert defaults to the CATEGORY property of the org heading, or 
     1. Create a timer to send an alert at that time via alert.el. This alert will use the string =org-timer-alert-final-alert-string=
     2. Create warning timers according to the intervals specified in =org-timer-alerts-warning-times= and using the string =org-timer-alert-warning-string=
  3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timer-alerts-set-all-timers=. You can disable all timers with =org-timer-alerts-cancel-all-timers=.
+* Other efforts
+This pacakge is meant to do what I want and and nothing more. Here are other efforts that may be suitable for a person who is not me:
+
+=org-alert=. /See/ https://github.com/spegoraro/org-alert.
+
+=org-notify= https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el
+
+=org-wild-notify= https://github.com/akhramov/org-wild-notifier.el
 
 * The code
 It's a mess. Don't like it? Fix it!
