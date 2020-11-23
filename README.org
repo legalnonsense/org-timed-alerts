@@ -15,6 +15,7 @@ I do it all the time.
 ** Usage
 *** Install the dependencies:
 - alert :: https://github.com/jwiegley/alert.
+(Test alert by evaluating: =(alert "test")=. Did you see a notification? If so, proceed. If not, you'll need to figure out what went wrong.)
 - dash.el :: https://github.com/magnars/dash.el
 - org-ql :: https://github.com/alphapapa/org-ql.
 - ts.el :: https://github.com/alphapapa/ts.el
@@ -42,11 +43,9 @@ Use-package declaration with all custom variables set to the default values:
 *** Without use-package
 There is no reason not to use =use-package=, but if you refuse:
 #+begin_src emacs-lisp :results silent
-  (eval-after-load 'org
-    (require 'org-timed-alerts)
-    (add-hook 'org-mode-hook #'org-timed-alerts-mode)
-    ;; or skip the hook and:
-    (org-timed-alerts-mode))
+  (eval-after-load 'org-agenda
+    '(progn (require 'org-timed-alerts)
+            (org-timed-alerts-mode)))
 #+end_src
 ** Customization
 
