@@ -20,16 +20,18 @@ Clone this repository into your load path.
 #+end_src
 *** Use-package example
 #+begin_src emacs-lisp :results silent
-    (use-package org-timed-alerts
-      :custom ((org-timed-alerts-default-warning-times '(-20 -10 -5 -2))
-               (org-timed-alerts-default-alert-props '(:icon ""))
-               (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
-               (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
-                                                       "it is now %current-time\n "
-                                                       "*THIS IS YOUR %warning-time MINUTE WARNING*")))
-      ;; I hate the :hook syntax
-      :init
-      (add-hook 'org-mode-hook #'org-timed-alerts-mode))
+  (use-package org-timed-alerts
+    :custom ((org-timed-alerts-default-warning-times '(-20 -10 -5 -2))
+             (org-timed-alerts-default-alert-props '(:icon ""))
+             (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
+             (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
+                                                     "it is now %current-time\n "
+                                                     "*THIS IS YOUR %warning-time MINUTE WARNING*")))
+    ;; I hate the :hook syntax
+    :init
+    (add-hook 'org-mode-hook #'org-timed-alerts-mode)
+    :after (org))
+
 #+end_src
 *** Without use-package
 #+begin_src emacs-lisp :results silent
