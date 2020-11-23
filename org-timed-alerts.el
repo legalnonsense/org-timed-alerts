@@ -123,7 +123,7 @@ Accepts any properties used by `alert':
   "Internal list of timer objects.")
 
 (defun org-timed-alert--string-substitute (string map)
-  "MAP is an alist in the form of '((placeholder . replacement))
+  "MAP is an alist in the form of '((PLACEHOLDER . REPLACEMENT))
 STRING is the original string. PLACEHOLDER is a symbol that will
 be converted to a string prefixed with a %: \"%PLACEHOLDER\". 
 REPLACEMENT can be a string, a number, or a symbol. Replace all
