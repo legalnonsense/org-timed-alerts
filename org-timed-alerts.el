@@ -216,8 +216,8 @@ replacement values and return a new string."
 		     message
 		     :title (or title
 				(org-timed-alerts--get-default-val :title))
-		     ;; :app-icon (or icon
-		     ;; 		   (org-timed-alerts--get-default-val :icon))
+		     :app-icon (or icon
+				   (org-timed-alerts--get-default-val :icon))
 		     :category (or category
 				   (org-timed-alerts--get-default-val :category))
 		     :buffer (or buffer
