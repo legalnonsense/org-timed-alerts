@@ -4,7 +4,7 @@ Receive warnings and alerts via =alert.el= for upcoming events in your day.
 
 Ever look at your clock 10 minutes before a scheduled phone call, keep working on something else, and then not look at your clock until 2 minutes after the phone call was supposed to begin?
 
-I do it all the time. 
+I do it all the time. It must stop. 
 
 =org-timed-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time-of-day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert. Alert messages are customizable. 
 
