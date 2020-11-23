@@ -142,7 +142,9 @@ to the root heading, you could use:
   '(:title (lambda ()
 	     (save-excursion
 	       (while (org-up-heading-safe))
-	       (org-get-heading t t t t)))"
+	       (org-get-heading t t t t)))
+
+Which moves up to the root header and returns that headline."
   :type '(plist :key-type sexp :value-type sexp)
   :group 'org-timed-alerts)
 
@@ -184,9 +186,9 @@ if val is a function, call it.  Otherwise return val."
   (let ((val (plist-get
 	      org-timed-alerts-default-alert-props
 	      prop)))
-    (pcase val
-      ((pred functionp) (funcall val))
-      (_ val))))
+    (if (functionp val)
+	(funcall val)
+      val)))
 
 (defun org-timed-alerts--parser ()
   ":action for `org-ql-select'"
@@ -240,19 +242,29 @@ if val is a function, call it.  Otherwise return val."
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
-  (push (run-at-time time nil #'alert message
-		     :title (or title (org-timed-alerts--get-default-prop :title))
-		     :icon (or icon (org-timed-alerts--get-default-prop :icon))
-		     :category (or category (org-timed-alerts--get-default-prop :category))
-		     :buffer (or buffer (org-timed-alerts--get-default-prop :buffer))
-		     :mode (or mode (org-timed-alerts--get-default-prop :mode))
-		     :data (or data (org-timed-alerts--get-default-prop :data))
-		     :style (or style (org-timed-alerts--get-default-prop :style))
-		     :severity (or severity (org-timed-alerts--get-default-prop :severity))
-		     :persistent (or persistent (org-timed-alerts--get-default-prop :persistent))
-		     :never-persist (or never-persist
-					(org-timed-alerts--get-default-prop :never-persist))
-		     :id (or id (org-timed-alerts--get-default-prop :id)))
+  (push (run-at-time
+	 time nil #'alert message
+	 :title (or title
+		    (org-timed-alerts--get-default-prop :title))
+	 :icon (or icon
+		   (org-timed-alerts--get-default-prop :icon))
+	 :category (or category
+		       (org-timed-alerts--get-default-prop :category))
+	 :buffer (or buffer
+		     (org-timed-alerts--get-default-prop :buffer))
+	 :mode (or mode
+		   (org-timed-alerts--get-default-prop :mode))
+	 :data (or data
+		   (org-timed-alerts--get-default-prop :data))
+	 :style (or style
+		    (org-timed-alerts--get-default-prop :style))
+	 :severity (or severity
+		       (org-timed-alerts--get-default-prop :severity))
+	 :persistent (or persistent
+			 (org-timed-alerts--get-default-prop :persistent))
+	 :never-persist (or never-persist
+			    (org-timed-alerts--get-default-prop :never-persist))
+	 :id (or id (org-timed-alerts--get-default-prop :id)))
 	org-timed-alerts--timer-list))
 
 (defun org-timed-alerts-set-all-timers ()
