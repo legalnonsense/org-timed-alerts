@@ -158,8 +158,8 @@ replacement values and return a new string."
 		  ;; associated time. We'll assume that if the
 		  ;; time is midnight, there is no time of day
 		  ;; in the timestamp and ignore it. 
-		  (when (and (not (= 0 (ts-hour time)))
-			     (not (= 0 (ts-minute time)))
+		  (when (and (or (not (= 0 (ts-hour time)))
+				 (not (= 0 (ts-minute time))))
 			     (ts> time (ts-now)))
 		    ;; Add warning timers
 		    (cl-loop for warning-time
