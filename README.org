@@ -11,17 +11,21 @@ Ever look at your clock 10 minutes before a scheduled phone call, keep working o
 =org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. 
 
 ** Usage
-*** Set up =alert.el=
-/See/ https://github.com/jwiegley/alert
+*** Install and set up the dependencies
+- alert :: https://github.com/jwiegley/alert.
+- dash.el :: https://github.com/magnars/dash.el
+- org-ql :: https://github.com/alphapapa/org-ql.
+- ts.el :: https://github.com/alphapapa/ts.el
 *** Installation
 Clone this repository into your load path.
 #+begin_src emacs-lisp :results silent
   git clone https://github.com/legalnonsense/org-timed-alerts.git
 #+end_src
-*** Use-package example
+*** Use-package example (with all 
 #+begin_src emacs-lisp :results silent
   (use-package org-timed-alerts
-    :custom ((org-timed-alerts-warning-times '(-20 -10 -5 -2))
+    :custom ((org-timed-alerts-files (org-agenda-files))
+             (org-timed-alerts-warning-times '(-10 -5))
              (org-timed-alerts-default-alert-props '(:icon ""))
              (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
              (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
@@ -34,6 +38,7 @@ Clone this repository into your load path.
 
 #+end_src
 *** Without use-package
+There is no reason not to use =use-package=, but if you refuse:
 #+begin_src emacs-lisp :results silent
   (eval-after-load 'org
     (require 'org-timed-alerts)
@@ -44,13 +49,13 @@ Clone this repository into your load path.
 
 ** Customization
 
-| Custom variable                      | Description                                                                                                                                                                                                    | Default                                                                                                      |
-|--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
-| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files)                                                                                           |
-| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                        |
-| org-timed-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                    |
-| org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
-| org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
+| Custom variable                      | Description                                                                                                                                                                                                                                                                                                                                  | Default                                                                                                      |
+|--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
+| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                                                                                                                                                  | (org-agenda-files)                                                                                           |
+| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                                                                                                                                                        | '(:icon "") [i.e., don’t use an icon]                                                                        |
+| org-timed-alerts-warning-times       | List of integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning.  There is no difference between positive and negative numbers, i.e., 10 and -10 both mean to send an alert 10 minutes before the event | '(-10 -5)                                                                                                    |
+| org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
+| org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -59,7 +64,7 @@ Clone this repository into your load path.
 | %todo         | the TODO state of the the heading, if any                                 |
 | %headline     | the headline text of the heading                                          |
 | %alert-time   | the time of the event                                                     |
-| %warning-time | the number of minutes before the event the warning will be shown          |
+| %warning-time | the current number of minutes before the event                            |
 | %current-time | the time the alert is actually sent to the user                           |
 | %category     | the category property of the org heading, or the name of the file if none |
 
@@ -73,8 +78,17 @@ For example, consider the heading:
 #+end_src
 The following string:
 =%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *=
+Will use these substitutions
+| string        | substitution                            |
+|---------------+-----------------------------------------|
+| %todo         | "TODO"                                  |
+| %headline     | "phone conference I don't want to have" |
+| %alert-time   | "20:05"                                 |
+| %warning-time | "5"                                     |
+| %current-time | "20:00"                                 |
+| %category     | "annoying-client"                       |
 
-Will display a warning that looks like this:
+And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
 The title of the alert defaults to the CATEGORY property of the org heading, or the file name if no category is specified.
