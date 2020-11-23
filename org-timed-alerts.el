@@ -1,9 +1,9 @@
-;;; org-timer-alerts.el --- Automatiic org timers for upcoming events -*- lexical-binding: t; -*-
+;;; org-timed-alerts.el --- Automatiic org timers for upcoming events -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Jeff Filipovits
 
 ;; Author: Jeff Filipovits <jrfilipovits@gmail.com>
-;; Url: https://github.com/legalnonsense/org-timer-alerts
+;; Url: https://github.com/legalnonsense/org-timed-alerts
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "26.1") (org "9.0") (s "1.12.0")
 ;;                    (ts "0.2") (org-ql "0.5-pre") (dash "2.16.0"))
@@ -43,7 +43,7 @@
 ;; Then put this file in your load-path, and put this in your init
 ;; file:
 
-;; (require 'org-timer-alerts)
+;; (require 'org-timed-alerts)
 
 ;;;; Usage
 
@@ -79,7 +79,7 @@
 (require 'ts)
 (require 'org-ql)
 
-(defcustom org-timer-alert-final-alert-string
+(defcustom org-timed-alert-final-alert-string
   "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
@@ -89,7 +89,7 @@
 %current-time : the time the alert is sent to the user
 %category     : the category property of the org heading, or the name of the file if none")
 
-(defcustom org-timer-alert-warning-string
+(defcustom org-timed-alert-warning-string
   "%todo %headline\n at %alert-time\n it is now %current-time\n *THIS IS YOUR %warning-time MINUTE WARNING*"
   "String for alert warning messages, which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
@@ -99,10 +99,10 @@
 %current-time : the time the alert is sent to the user
 %category     : the category property of the org heading, or the name of the file if none")
 
-(defcustom org-timer-alerts-files (org-agenda-files)
+(defcustom org-timed-alerts-files (org-agenda-files)
   "List of org files used to check for events.")
 
-(defcustom org-timer-alerts-default-alert-props
+(defcustom org-timed-alerts-default-alert-props
   '(:icon "")
   "Plist used for default properties for alert messages.
 Accepts any properties used by `alert':
@@ -117,13 +117,13 @@ Accepts any properties used by `alert':
  :never-persist
  :id")
 
-(defcustom org-timer-alerts-warning-times '(-10 -5)
+(defcustom org-timed-alerts-warning-times '(-10 -5)
   "List of minutes before an event when a warning will be sent.")
 
-(defvar org-timer-alerts--timer-list nil
+(defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
 
-(defun org-timer-alert--string-substitute (string map)
+(defun org-timed-alert--string-substitute (string map)
   "MAP is an alist in the form of '((\"%placeholder\" . replacement))
 STRING is the original string. Replace all %placeholders with their 
 replacement values and return a new string."
@@ -142,7 +142,7 @@ replacement values and return a new string."
 			    string))
 	   finally return string))
 
-(defun org-timer-alerts--parser ()
+(defun org-timed-alerts--parser ()
   ":action for `org-ql-select'"
   (-let* (((&alist "ITEM" headline
 		   "TIMESTAMP" timestamp
@@ -165,7 +165,7 @@ replacement values and return a new string."
 		    ;; Add warning timers
 		    (cl-loop for warning-time
 			     in
-			     org-timer-alerts-warning-times
+			     org-timed-alerts-warning-times
 			     do
 			     (let ((replacements
 				    `((todo . ,(or todo ""))
@@ -180,10 +180,10 @@ replacement values and return a new string."
 				      (warning-time . ,(abs warning-time))
 				      (category . ,category))))
 			       ;;(when (ts> (ts-parse alert-time) (ts-now))
-			       (org-timer-alerts--add-timer
+			       (org-timed-alerts--add-timer
 				(alist-get 'current-time replacements)
-				(org-timer-alert--string-substitute
-				 org-timer-alert-warning-string
+				(org-timed-alert--string-substitute
+				 org-timed-alert-warning-string
 				 replacements)
 				:title (or category "ALERT"))))
 		    ;; Add final, actual, notification at time of event. 
@@ -194,81 +194,81 @@ replacement values and return a new string."
 			     (alert-time . ,(ts-format "%H:%M" time))
 			     (warning-time . 0)
 			     (category . ,category))))
-		      (org-timer-alerts--add-timer
+		      (org-timed-alerts--add-timer
 		       (alist-get 'current-time replacements)
-		       (org-timer-alert--string-substitute
-			org-timer-alert-final-alert-string
+		       (org-timed-alert--string-substitute
+			org-timed-alert-final-alert-string
 			replacements)
 		       :title (or category "ALERT"))))))))
 
-(defun org-timer-alerts--get-default-val (prop)
-  "Get the default value of PROP from `org-timer-alerts-default-alert-props'."
-  (plist-get org-timer-alerts-default-alert-props
+(defun org-timed-alerts--get-default-val (prop)
+  "Get the default value of PROP from `org-timed-alerts-default-alert-props'."
+  (plist-get org-timed-alerts-default-alert-props
 	     prop))
 
-(defun org-timer-alerts--add-timer (time message &optional &key
+(defun org-timed-alerts--add-timer (time message &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
-  "Create timers via `run-at-time' and add to `org-timer-alerts--timer-list'"
+  "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
   (push (run-at-time time
 		     nil
 		     #'alert
 		     message
 		     :title (or title
-				(org-timer-alerts--get-default-val :title))
+				(org-timed-alerts--get-default-val :title))
 		     ;; :app-icon (or icon
-		     ;; 		   (org-timer-alerts--get-default-val :icon))
+		     ;; 		   (org-timed-alerts--get-default-val :icon))
 		     :category (or category
-				   (org-timer-alerts--get-default-val :category))
+				   (org-timed-alerts--get-default-val :category))
 		     :buffer (or buffer
-				 (org-timer-alerts--get-default-val :buffer))
+				 (org-timed-alerts--get-default-val :buffer))
 		     :mode (or mode
-			       (org-timer-alerts--get-default-val :mode))
+			       (org-timed-alerts--get-default-val :mode))
 		     :data (or data
-			       (org-timer-alerts--get-default-val :data))
+			       (org-timed-alerts--get-default-val :data))
 		     :style (or style
-				(org-timer-alerts--get-default-val :style))
+				(org-timed-alerts--get-default-val :style))
 		     :severity (or severity
-				   (org-timer-alerts--get-default-val :severity))
+				   (org-timed-alerts--get-default-val :severity))
 		     :persistent (or persistent
-				     (org-timer-alerts--get-default-val :persistent))
+				     (org-timed-alerts--get-default-val :persistent))
 		     :never-persist (or never-persist
-					(org-timer-alerts--get-default-val :never-persist))
+					(org-timed-alerts--get-default-val :never-persist))
 		     :id (or id
-			     (org-timer-alerts--get-default-val :id)))
-	org-timer-alerts--timer-list))
+			     (org-timed-alerts--get-default-val :id)))
+	org-timed-alerts--timer-list))
 
-(defun org-timer-alerts-set-all-timers ()
+(defun org-timed-alerts-set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."
   (interactive)
   ;; Reset existing timers
-  (org-timer-alerts-cancel-all-timers)
+  (org-timed-alerts-cancel-all-timers)
   ;; Clear the `org-ql' cache
   (setq org-ql-cache (make-hash-table :weakness 'key))
   ;; Add timers
-  (org-ql-select org-timer-alerts-files
+  (org-ql-select org-timed-alerts-files
     '(ts-active :on today)
-    :action #'org-timer-alerts--parser)
-  (message "Org-timer-alerts: Alert timers updated."))
+    :action #'org-timed-alerts--parser)
+  (message "org-timed-alerts: Alert timers updated."))
 
-(defun org-timer-alerts-cancel-all-timers ()
+(defun org-timed-alerts-cancel-all-timers ()
   "Cancel all the timers."
   (interactive)
-  (cl-loop for timer in org-timer-alerts--timer-list
+  (cl-loop for timer in org-timed-alerts--timer-list
 	   do (cancel-timer timer))
-  (setq org-timer-alerts--timer-list nil))
+  (setq org-timed-alerts--timer-list nil))
 
-(define-minor-mode org-timer-alerts-mode
+(define-minor-mode org-timed-alerts-mode
   "Alert before an event."
   nil
   nil
   nil
-  (if org-timer-alerts-mode
+  (if org-timed-alerts-mode
       (progn 
-	(org-timer-alerts-set-all-timers)
-	(add-hook 'org-agenda-mode-hook #'org-timer-alerts-set-all-timers))
-    (org-timer-alerts-cancel-all-timers)
-    (remove-hook ' org-agenda-mode-hook #'org-timer-alerts-set-all-timers)))
+	(org-timed-alerts-set-all-timers)
+	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+    (org-timed-alerts-cancel-all-timers)
+    (remove-hook ' org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
 
-(provide 'org-timer-alerts)
+(provide 'org-timed-alerts)
