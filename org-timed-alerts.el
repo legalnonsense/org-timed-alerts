@@ -74,7 +74,6 @@
 
 ;;;; Requirements
 
-
 (require 'alert)
 (require 'ts)
 (require 'org-ql)
@@ -269,6 +268,6 @@ replacement values and return a new string."
 	(org-timed-alerts-set-all-timers)
 	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
     (org-timed-alerts-cancel-all-timers)
-    (remove-hook ' org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
 
 (provide 'org-timed-alerts)

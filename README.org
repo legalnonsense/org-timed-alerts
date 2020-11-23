@@ -29,23 +29,23 @@ Clone this repository into your load path.
                                                        "*THIS IS YOUR %warning-time MINUTE WARNING*")))
       ;; I hate the :hook syntax
       :init
-      (add-hook 'org-mode #'org-timed-alerts-mode))
+      (add-hook 'org-mode-hook #'org-timed-alerts-mode))
 #+end_src
 *** Without use-package
 #+begin_src emacs-lisp :results silent
   (require 'org-timed-alerts)
-  (add-hook 'org-mode #'org-timed-alerts-mode))
-  ;; or skip the hook and
+  (add-hook 'org-mode-hook #'org-timed-alerts-mode))
+  ;; or skip the hook and:
   (org-timed-alerts-mode)
 #+end_src
 ** Customization
 
-| Custom variable                      | Description                                                                                                                                                                                                    | Default                                                                                                  |
-|--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------|
-| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                        |
-| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                    |
-| org-timed-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                |
-| org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                        |
+| Custom variable                      | Description                                                                                                                                                                                                    | Default                                                                                                      |
+|--------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
+| org-timed-alerts-files               | File or Files to scan when gathering events                                                                                                                                                                    | (org-agenda-files                                                                                            |
+| org-timed-alerts-default-alert-props | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.                                                                                          | '(:icon "") [i.e., don’t use an icon]                                                                        |
+| org-timed-alerts-warning-times       | List of negative integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning. | '(-10 -5)                                                                                                    |
+| org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                     | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                        | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
