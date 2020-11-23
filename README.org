@@ -15,7 +15,7 @@ I do it all the time.
 ** Usage
 *** Install the dependencies:
 - alert :: https://github.com/jwiegley/alert.
-(Test alert by evaluating: =(alert "test")=. Did you see a notification? If so, proceed. If not, you'll need to figure out what went wrong. For me, setting =alert-default-style= to =notifications= will show a notification but does not obey all options (e.g., =alert-fade-fime=). Setting it to =libnotify= works much better. You'll have to fend for yourself on this front.)
+(Test alert by evaluating: =(alert "test")=. Did you see a notification? If so, proceed. If not, you'll need to figure out what went wrong. For me, setting =alert-default-style= to =notifications= will show a notification but does not obey all options (e.g., =alert-fade-fime=). Setting it to =libnotify= works much better. Obviously this is OS dependent, so you'll have to fend for yourself.)
 
 - dash.el :: https://github.com/magnars/dash.el
 - org-ql :: https://github.com/alphapapa/org-ql.
