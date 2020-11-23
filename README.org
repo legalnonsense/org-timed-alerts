@@ -56,25 +56,6 @@ There is no reason not to use =use-package=, but if you refuse:
 | org-timed-alert-final-alert-string   | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string       | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
 | org-timed-alerts-agenda-hook-p       | Update all pending alerts when you generate an agenda?                                                                                                                                                                                                                                                                             | t                                                                                                            |
-*** Note about =org-timed-alerts-default-alert-props=
-As stated above, the value of any property can be a function that is run at the underlying org heading. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
-#+begin_src emacs-lisp :results silent
-  (setq org-timed-alerts-default-alert-props '(:title 
-                                               (lambda () (save-excursion
-                                                            ;; Move to the root heading
-                                                            (while (org-up-heading-safe))
-                                                            ;; Return its headline, without tags, todo, etc.
-                                                            (org-get-heading t t t t)))))
-#+end_src
-Or suppose you wanted to customize the icon for an alert depending on the priority of the heading:
-#+begin_src emacs-lisp :results silent
-  (setq org-timed-alerts-default-alert-props '(:icon 
-                                               (lambda ()
-                                                 (if (string= "A" (org-entry-get (point) "PRIORITY"))
-                                                     "/path/to/some/icon"
-                                                   "/path/to/some/other/icon"))))
-#+end_src
-(If this part is above your head or appears pointless, skip it. You can keep =org-timed-alerts-default-alert-props= set to =nil= and everything will be fine.)
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -111,7 +92,25 @@ And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
 Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading. (If no =category= property is set, it will use the filename.)
-
+** Note about =org-timed-alerts-default-alert-props=
+As stated above, the value of any property can be a function that is run at the underlying org heading. If you want more advanced customization of the alert properties, you can take advantage of this. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
+#+begin_src emacs-lisp :results silent
+  (setq org-timed-alerts-default-alert-props '(:title 
+                                               (lambda () (save-excursion
+                                                            ;; Move to the root heading
+                                                            (while (org-up-heading-safe))
+                                                            ;; Return its headline, without tags, todo, etc.
+                                                            (org-get-heading t t t t)))))
+#+end_src
+Or suppose you wanted to customize the icon for an alert depending on the priority of the heading:
+#+begin_src emacs-lisp :results silent
+  (setq org-timed-alerts-default-alert-props '(:icon 
+                                               (lambda ()
+                                                 (if (string= "A" (org-entry-get (point) "PRIORITY"))
+                                                     "/path/to/some/icon"
+                                                   "/path/to/some/other/icon"))))
+#+end_src
+(If this part is above your head or appears pointless, skip it. You can keep =org-timed-alerts-default-alert-props= set to =nil= and everything will be fine.)
 * How it works
  1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
  2. For each of these events which has an associated time:
