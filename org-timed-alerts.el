@@ -177,21 +177,18 @@ the event."
 
 (defun org-timed-alerts--string-substitute (string map)
   "MAP is an alist in the form of '((PLACEHOLDER . REPLACEMENT))
-STRING is the original string. PLACEHOLDER is a symbol that will
+STRING is the original string. PLACEHOLDER is a symbol or a string that will
 be converted to a string prefixed with a %: \"%PLACEHOLDER\". 
-REPLACEMENT can be a string, a number, or a symbol. Replace all
+REPLACEMENT can be a string, a number, symbol, or function. Replace all
 occurrences of %placeholder with replacement and return a new string."
   (cl-loop for (holder . replacement) in map
 	   when replacement
 	   do (setq string (replace-regexp-in-string
-			    (concat "%" (pcase holder
-					  ((pred symbolp) (symbol-name holder))
-					  ((pred stringp) holder)))
+			    (concat "%" holder)
 			    (pcase replacement
 			      ((pred stringp) replacement)
 			      ((pred numberp) (number-to-string replacement))
-			      ((pred symbolp) (symbol-name replacement))
-			      ((pred null) "")
+			      ((pred functionp) (funcall replacement))
 			      (_ ""))
 			    string))
 	   finally return string))
