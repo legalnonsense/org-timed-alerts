@@ -90,7 +90,9 @@
   :prefix "org-timed-alerts-")
 
 (defcustom org-timed-alerts-alert-function #'alert
-  "Alert function. Default is #'alert. See `alert' for more possibilities.")
+  "Alert function. Default is #'alert. See `alert' for more possibilities."
+  :type 'function
+  :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-final-alert-string
   "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
@@ -121,8 +123,7 @@
   :type '(list file)
   :group 'org-timed-alerts)
 
-(defcustom org-timed-alerts-default-alert-props
-  '(:icon "")
+(defcustom org-timed-alerts-default-alert-props nil
   "Plist used for default properties for alert messages.
 Accepts any properties used by `alert':
  :title 
