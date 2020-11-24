@@ -151,7 +151,7 @@ to the root heading, you could use:
 	       (org-get-heading t t t t)))
 
 Which moves up to the root header and returns that headline."
-  :type '(plist :key-type sexp :value-type sexp)
+  :type '(plist :key-type symbol :value-type sexp)
   :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-agenda-hook-p t
@@ -206,7 +206,10 @@ if val is a function, call it.  Otherwise return val."
       val)))
 
 (defun org-timed-alerts--parser ()
-  ":action for `org-ql-select'"
+  ":action key for `org-ql-select' which is run at 
+each org heading with a time-of-day timestamp.  
+Parses the heading and schedules alert times via
+ `org-timed-alerts--add-timer'."
   (-let* (((&alist "ITEM" headline
 		   "TIMESTAMP" timestamp
 		   "DEADLINE" deadline
@@ -256,7 +259,9 @@ if val is a function, call it.  Otherwise return val."
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
-  "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
+  "Create timers via `run-at-time' and add them to 
+`org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
+MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (push (run-at-time
 	 time
 	 nil
