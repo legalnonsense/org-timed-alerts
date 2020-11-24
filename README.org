@@ -55,9 +55,10 @@ There is no reason not to use =use-package=, but if you refuse:
 
 
 | Less frequently needed custom variables | Description                                                                                                                                                                                                          | Default value |
-| org-timed-alerts-agenda-hook-p          | Update all pending alerts when you generate an agenda?                                                                                                                                                               | t       |
-| org-timed-alerts-default-alert-props    | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading. | nil     |
-| org-timed-alerts-alert-command          | Function to call when invoking the alert. See =alert.el= for other possibilities, e.g., =#'alert-libnotify-notify=, =#'alert-growl-notify=.  Don't touch it unless you have a reason to.                                   | #'alert |
+|-----------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------|
+| org-timed-alerts-agenda-hook-p          | Update all pending alerts when you generate an agenda?                                                                                                                                                               | t             |
+| org-timed-alerts-default-alert-props    | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading. | nil           |
+| org-timed-alerts-alert-command          | Function to call when invoking the alert. See =alert.el= for other possibilities, e.g., =#'alert-libnotify-notify=, =#'alert-growl-notify=.  Don't touch it unless you have a reason to.                                   | #'alert       |
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
