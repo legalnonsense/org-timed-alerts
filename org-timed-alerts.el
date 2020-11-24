@@ -89,6 +89,9 @@
   :group 'org-timed-alerts
   :prefix "org-timed-alerts-")
 
+(defcustom org-timed-alerts-alert-function #'alert
+  "Alert function. Default is #'alert. See `alert' for more possibilities.")
+
 (defcustom org-timed-alerts-final-alert-string
   "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
@@ -248,7 +251,10 @@ if val is a function, call it.  Otherwise return val."
 					 never-persist id)
   "Create timers via `run-at-time' and add to `org-timed-alerts--timer-list'"
   (push (run-at-time
-	 time nil #'alert message
+	 time
+	 nil
+	 org-timed-alerts-alert-function
+	 message
 	 :title (or title
 		    (org-timed-alerts--get-default-prop :title))
 	 :icon (or icon
