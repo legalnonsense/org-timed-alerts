@@ -101,10 +101,10 @@
   "String for the final alert message, which which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
 %headline     : the headline text of the heading
+%category     : the category property of the org heading, or the name of the file if none
 %alert-time   : the time of the event
 %warning-time : the number of minutes before the event the warning will be shown
-%current-time : the time the alert is sent to the user
-%category     : the category property of the org heading, or the name of the file if none"
+%current-time : the time the alert is sent to the user"
   :type 'string
   :group 'org-timed-alerts)
 
@@ -113,10 +113,11 @@
   "String for alert warning messages, which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
 %headline     : the headline text of the heading
+%category     : the category property of the org heading, or the name of the file if none
 %alert-time   : the time of the event
 %warning-time : the number of minutes before the event the warning will be shown
-%current-time : the time the alert is sent to the user
-%category     : the category property of the org heading, or the name of the file if none"
+%current-time : the time the alert is sent to the user"
+
   :type 'string
   :group 'org-timed-alerts)
 
