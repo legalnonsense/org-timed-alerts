@@ -97,20 +97,22 @@ Unless the =:title= property is overridden by =org-timed-alerts-default-alert-pr
 ** Note about =org-timed-alerts-default-alert-props=
 As stated above, the value of any property can be a function that is run at the underlying org heading. If you want more advanced customization of the alert properties, you can take advantage of this. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
 #+begin_src emacs-lisp :results silent
-  (setq org-timed-alerts-default-alert-props '(:title 
-                                               (lambda () (save-excursion
-                                                            ;; Move to the root heading
-                                                            (while (org-up-heading-safe))
-                                                            ;; Return its headline, without tags, todo, etc.
-                                                            (org-get-heading t t t t)))))
+  (setq org-timed-alerts-default-alert-props
+        '(:title 
+          (lambda () (save-excursion
+                       ;; Move to the root heading
+                       (while (org-up-heading-safe))
+                       ;; Return its headline, without tags, todo, etc.
+                       (org-get-heading t t t t)))))
 #+end_src
 Or suppose you wanted to customize the icon for an alert depending on the priority of the heading:
 #+begin_src emacs-lisp :results silent
-  (setq org-timed-alerts-default-alert-props '(:icon 
-                                               (lambda ()
-                                                 (if (string= "A" (org-entry-get (point) "PRIORITY"))
-                                                     "/path/to/some/icon"
-                                                   "/path/to/some/other/icon"))))
+  (setq org-timed-alerts-default-alert-props
+        '(:icon 
+          (lambda ()
+            (if (string= "A" (org-entry-get (point) "PRIORITY"))
+                "/path/to/some/icon"
+              "/path/to/some/other/icon"))))
 #+end_src
 ** Updating the timers
 =org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. You can turn this off by setting =org-timed-alerts-agenda-hook-p= to nil. If you do that, you can update manually with =org-timed-alerts-set-all-timers= or find another suitable hook (the package only schedules timers for the current day, so you'll need to update at least daily and after any relevant timestamp changes).
