@@ -45,7 +45,7 @@
 ;; file. See the README for a use-package declaration. 
 
 ;;   (eval-after-load 'org
-;;     (require 'org-timed-alerts))
+;;     '(progn (require 'org-timed-alerts)))
 
 ;;;; Usage
 
@@ -122,8 +122,9 @@
   :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-files (org-agenda-files)
-  "File or list of org files used to check for events."
-  :type '(list file)
+  "File or list of org files used to check for events,
+or a function which returns the same."
+  :type 'sexp
   :group 'org-timed-alerts)
 
 (defcustom org-timed-alerts-default-alert-props nil
@@ -184,7 +185,11 @@ occurrences of %placeholder with replacement and return a new string."
   (cl-loop for (holder . replacement) in map
 	   when replacement
 	   do (setq string (replace-regexp-in-string
-			    (concat "%" holder)
+			    (concat "%"
+				    (pcase holder
+				      ((pred symbolp) (symbol-name holder))
+				      ((pred stringp) holder)
+				      ((pred numberp) (number-to-string holder))))
 			    (pcase replacement
 			      ((pred stringp) replacement)
 			      ((pred numberp) (number-to-string replacement))
@@ -292,20 +297,16 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
-  "Run `org-ql' query to get all headings with today's timestamp."
-  (interactive)
-  (org-timed-alerts-cancel-all-timers)
-  (when (null org-timed-alerts-files)
-    (user-error (concat "Org-timed-alerts-files is nil."
-			"Consider running "
-			"(setq org-timed-alerts-files (org-agenda-files))")))
-  ;; Clear the `org-ql' cache
-  ;; (Don't know if necessary but needed for testing.)
-  (setq org-ql-cache (make-hash-table :weakness 'key))
-  (org-ql-select org-timed-alerts-files
-    '(ts-active :on today)
-    :action #'org-timed-alerts--parser)
-  (message "Org-timed-alerts: timers updated."))
+"Run `org-ql' query to get all headings with today's timestamp."
+(interactive)
+(org-timed-alerts-cancel-all-timers)
+;; Clear the `org-ql' cache
+;; (Don't know if necessary but needed for testing.)
+(setq org-ql-cache (make-hash-table :weakness 'key))
+(org-ql-select org-timed-alerts-files
+  '(ts-active :on today)
+  :action #'org-timed-alerts--parser)
+(message "Org-timed-alerts: timers updated."))
 
 ;;;###autoload 
 (defun org-timed-alerts-cancel-all-timers ()
@@ -322,10 +323,8 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   " alerts"
   nil
   (if org-timed-alerts-mode
-      (progn
-	(org-timed-alerts-set-all-timers)
-	(when org-timed-alerts-agenda-hook-p
-	  (add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+      (when org-timed-alerts-agenda-hook-p
+	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
     (org-timed-alerts-cancel-all-timers)
     (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
 
