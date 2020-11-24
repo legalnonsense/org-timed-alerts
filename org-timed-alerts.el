@@ -197,8 +197,8 @@ occurrences of %placeholder with replacement and return a new string."
 	   finally return string))
 
 (defun org-timed-alerts--get-default-prop (prop)
-  "Get val for PROP from `org-timed-alerts-default-alert-props'
-if val is a function, call it.  Otherwise return val."
+  "Get val for PROP from `org-timed-alerts-default-alert-props'.
+If val is a function, call it; otherwise, return val."
   (let ((val (plist-get
 	      org-timed-alerts-default-alert-props
 	      prop)))
