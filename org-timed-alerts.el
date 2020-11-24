@@ -298,6 +298,10 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   "Run `org-ql' query to get all headings with today's timestamp."
   (interactive)
   (org-timed-alerts-cancel-all-timers)
+  (when (null org-timed-alerts-files)
+    (user-error (concat "Org-timed-alerts-files is nil."
+			"Consider running "
+			"(setq org-timed-alerts-files (org-agenda-files))")))
   ;; Clear the `org-ql' cache
   ;; (Don't know if necessary but needed for testing.)
   (setq org-ql-cache (make-hash-table :weakness 'key))
