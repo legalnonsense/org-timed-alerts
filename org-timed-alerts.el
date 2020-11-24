@@ -82,6 +82,8 @@
 (require 'ts)
 (require 'org-ql)
 
+;;;; Customization
+
 (defgroup org-timed-alerts nil
   "org-timed-alerts options"
   :tag " org-timed-alerts"
@@ -165,8 +167,12 @@ the event."
   :type '(list integer)
   :group 'org-timed-alerts)
 
+;;;; Variables
+
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
+
+;;;; Functions
 
 (defun org-timed-alerts--string-substitute (string map)
   "MAP is an alist in the form of '((PLACEHOLDER . REPLACEMENT))
@@ -279,6 +285,8 @@ if val is a function, call it.  Otherwise return val."
 	 :id (or id (org-timed-alerts--get-default-prop :id)))
 	org-timed-alerts--timer-list))
 
+;;;; Commands
+
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
   "Run `org-ql' query to get all headings with today's timestamp."
@@ -314,7 +322,7 @@ if val is a function, call it.  Otherwise return val."
     (org-timed-alerts-cancel-all-timers)
     (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
 
-;; Footer
+;;;; Footer
 
 (provide 'org-timed-alerts)
 
