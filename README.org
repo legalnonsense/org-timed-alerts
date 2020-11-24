@@ -8,15 +8,12 @@ I do it all the time. It must stop.
 
 =org-timed-alerts= will scan your agenda files, find any timestamps (active, deadline, or scheduled) with a time-of-day specification and then send warnings via =alert.el= according to whatever intervals you specifcy. When the event begins, it will send a final alert. Alert messages are customizable. 
 
-=org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. You can turn this off by setting =org-timed-alerts-agenda-hook-p= to nil. If you do that, you can update manually with =org-timed-alerts-set-all-timers= or find another suitable hook (the package only schedules timers for the current day, so you'll need to update at least daily and after any relevant timestamp changes).
-
 ** Usage
 *** Install the dependencies:
 - alert :: https://github.com/jwiegley/alert.
-(Test =alert= by evaluating: =(alert "test")=. Did you see a notification? If so, proceed. If not, figure out what went wrong. Note: for me, setting =alert-default-style= to =notifications= will show a notification but does not obey all alert options (e.g., =alert-fade-fime=). Setting the default style to =libnotify= works much better. Obviously this is OS dependent, so you're on your own.)
-
+Test =alert= by evaluating: =(alert "test")=. Did you see a notification? If so, proceed. If not, figure out what went wrong. Note: you might have to experiment, e.g., for me, setting =alert-default-style= to =notifications= shows a notification but it does not obey all alert options (e.g., =alert-fade-fime=). Setting the default style to =libnotify= works much better. Obviously this is OS dependent.
 - dash.el :: https://github.com/magnars/dash.el
-- org-ql :: https://github.com/alphapapa/org-ql.
+- org-ql :: https://github.com/alphapapa/org-ql
 - ts.el :: https://github.com/alphapapa/ts.el
 *** Installation
 Clone this repository into your load path.
@@ -28,6 +25,8 @@ Use-package declaration with all custom variables set to the default values:
 #+begin_src emacs-lisp :results silent
   (use-package org-timed-alerts
     :custom ((org-timed-alerts-files (org-agenda-files))
+             (org-timed-alerts-alert-function # 'alert)
+             (org-timed-alerts-default-alert-props nil)
              (org-timed-alerts-warning-times '(-10 -5))
              (org-timed-alerts-agenda-hook-p t)
              (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
@@ -35,7 +34,6 @@ Use-package declaration with all custom variables set to the default values:
                                                      "it is now %current-time\n "
                                                      "*THIS IS YOUR %warning-time MINUTE WARNING*")))
     :init 
-    ;; I hate the :hook syntax...
     (add-hook 'org-mode-hook #'org-timed-alerts-mode)
     :after (org))
 #+end_src
@@ -92,7 +90,7 @@ Will use these substitutions
 And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
-Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading. (If no =category= property is set, it will use the filename.)
+Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading.
 ** Note about =org-timed-alerts-default-alert-props=
 As stated above, the value of any property can be a function that is run at the underlying org heading. If you want more advanced customization of the alert properties, you can take advantage of this. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
 #+begin_src emacs-lisp :results silent
@@ -111,7 +109,8 @@ Or suppose you wanted to customize the icon for an alert depending on the priori
                                                      "/path/to/some/icon"
                                                    "/path/to/some/other/icon"))))
 #+end_src
-(If this part is above your head or appears pointless, skip it. You can keep =org-timed-alerts-default-alert-props= set to =nil= and everything will be fine.)
+** Updating the timers
+=org-timed-alerts= updates itself via =org-agenda-hook=. This is fast enough that I don't notice much speed difference when generating an agenda. You can turn this off by setting =org-timed-alerts-agenda-hook-p= to nil. If you do that, you can update manually with =org-timed-alerts-set-all-timers= or find another suitable hook (the package only schedules timers for the current day, so you'll need to update at least daily and after any relevant timestamp changes).
 * How it works
  1. Run an org-ql query to get all active timestamps, scheduled timestamps, and deadlines on the current date.
  2. For each of these events which has an associated time:
