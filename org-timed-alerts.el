@@ -89,7 +89,7 @@
   :group 'org-timed-alerts
   :prefix "org-timed-alerts-")
 
-(defcustom org-timed-alert-final-alert-string
+(defcustom org-timed-alerts-final-alert-string
   "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"
   "String for the final alert message, which which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
@@ -101,7 +101,7 @@
   :type 'string
   :group 'org-timed-alerts)
 
-(defcustom org-timed-alert-warning-string
+(defcustom org-timed-alerts-warning-string
   "%todo %headline\n at %alert-time\n it is now %current-time\n *THIS IS YOUR %warning-time MINUTE WARNING*"
   "String for alert warning messages, which can use the following substitutions:
 %todo         : the TODO state of the the heading, if any
@@ -164,7 +164,7 @@ the event."
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
 
-(defun org-timed-alert--string-substitute (string map)
+(defun org-timed-alerts--string-substitute (string map)
   "MAP is an alist in the form of '((PLACEHOLDER . REPLACEMENT))
 STRING is the original string. PLACEHOLDER is a symbol that will
 be converted to a string prefixed with a %: \"%PLACEHOLDER\". 
@@ -228,10 +228,10 @@ if val is a function, call it.  Otherwise return val."
 	  (setq current-time (ts-format "%H:%M" current-time))
 	  (org-timed-alerts--add-timer
 	   current-time
-	   (org-timed-alert--string-substitute
+	   (org-timed-alerts--string-substitute
 	    (if (= warning-time 0)
-		org-timed-alert-final-alert-string
-	      org-timed-alert-warning-string)
+		org-timed-alerts-final-alert-string
+	      org-timed-alerts-warning-string)
 	    `((todo . ,(or todo ""))
 	      (headline . ,headline)
 	      (current-time . ,current-time)
