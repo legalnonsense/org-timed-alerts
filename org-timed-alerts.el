@@ -121,12 +121,6 @@
   :type 'string
   :group 'org-timed-alerts)
 
-(defcustom org-timed-alerts-files (org-agenda-files)
-  "File or list of org files used to check for events,
-or a function which returns the same."
-  :type 'sexp
-  :group 'org-timed-alerts)
-
 (defcustom org-timed-alerts-default-alert-props nil
   "Plist used for default properties for alert messages.
 Accepts any properties used by `alert':
@@ -297,16 +291,16 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
-"Run `org-ql' query to get all headings with today's timestamp."
-(interactive)
-(org-timed-alerts-cancel-all-timers)
-;; Clear the `org-ql' cache
-;; (Don't know if necessary but needed for testing.)
-(setq org-ql-cache (make-hash-table :weakness 'key))
-(org-ql-select org-timed-alerts-files
-  '(ts-active :on today)
-  :action #'org-timed-alerts--parser)
-(message "Org-timed-alerts: timers updated."))
+  "Run `org-ql' query to get all headings with today's timestamp."
+  (interactive)
+  (org-timed-alerts-cancel-all-timers)
+  ;; Clear the `org-ql' cache
+  ;; (Don't know if necessary but needed for testing.)
+  (setq org-ql-cache (make-hash-table :weakness 'key))
+  (org-ql-select (org-agenda-files)
+    '(ts-active :on today)
+    :action #'org-timed-alerts--parser)
+  (message "Org-timed-alerts: timers updated."))
 
 ;;;###autoload 
 (defun org-timed-alerts-cancel-all-timers ()
@@ -324,6 +318,7 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   nil
   (if org-timed-alerts-mode
       (when org-timed-alerts-agenda-hook-p
+	(org-timed-alerts-set-all-timers)
 	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
     (org-timed-alerts-cancel-all-timers)
     (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
