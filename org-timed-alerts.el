@@ -318,9 +318,9 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   nil
   (if org-timed-alerts-mode
       (when org-timed-alerts-agenda-hook-p
-	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
-  (org-timed-alerts-cancel-all-timers)
-  (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+    (org-timed-alerts-cancel-all-timers)
+    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
   
 ;;;; Footer
 
