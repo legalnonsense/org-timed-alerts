@@ -264,26 +264,26 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 	 nil
 	 org-timed-alerts-alert-function
 	 message
-	 :title (or title
-		    (org-timed-alerts--get-default-prop :title))
-	 :icon (or icon
-		   (org-timed-alerts--get-default-prop :icon))
-	 :category (or category
-		       (org-timed-alerts--get-default-prop :category))
-	 :buffer (or buffer
-		     (org-timed-alerts--get-default-prop :buffer))
-	 :mode (or mode
-		   (org-timed-alerts--get-default-prop :mode))
-	 :data (or data
-		   (org-timed-alerts--get-default-prop :data))
-	 :style (or style
-		    (org-timed-alerts--get-default-prop :style))
-	 :severity (or severity
-		       (org-timed-alerts--get-default-prop :severity))
-	 :persistent (or persistent
-			 (org-timed-alerts--get-default-prop :persistent))
-	 :never-persist (or never-persist
-			    (org-timed-alerts--get-default-prop :never-persist))
+	 :title
+	 (or title (org-timed-alerts--get-default-prop :title))
+	 :icon
+	 (or icon (org-timed-alerts--get-default-prop :icon))
+	 :category
+	 (or category (org-timed-alerts--get-default-prop :category))
+	 :buffer
+	 (or buffer (org-timed-alerts--get-default-prop :buffer))
+	 :mode
+	 (or mode (org-timed-alerts--get-default-prop :mode))
+	 :data
+	 (or data (org-timed-alerts--get-default-prop :data))
+	 :style
+	 (or style (org-timed-alerts--get-default-prop :style))
+	 :severity
+	 (or severity (org-timed-alerts--get-default-prop :severity))
+	 :persistent
+	 (or persistent (org-timed-alerts--get-default-prop :persistent))
+	 :never-persist
+	 (or never-persist (org-timed-alerts--get-default-prop :never-persist))
 	 :id (or id (org-timed-alerts--get-default-prop :id)))
 	org-timed-alerts--timer-list))
 
@@ -318,10 +318,10 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   nil
   (if org-timed-alerts-mode
       (when org-timed-alerts-agenda-hook-p
-	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
-    (org-timed-alerts-cancel-all-timers)
-    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
-
+	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+  (org-timed-alerts-cancel-all-timers)
+  (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+  
 ;;;; Footer
 
 (provide 'org-timed-alerts)
