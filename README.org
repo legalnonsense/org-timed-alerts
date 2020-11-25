@@ -33,13 +33,14 @@ Use-package declaration with all custom variables set to the default values:
     (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
                                             "it is now %current-time\n "
                                             "*THIS IS YOUR %warning-time MINUTE WARNING*"))
-    :hook org-agenda-mode)
+    :config
+    (add-hook 'org-mode-hook #'org-timed-alerts-mode))
 #+end_src
 *** Without use-package
-There is no reason not to use =use-package=, but if you refuse:
+There is no reason not to use =use-package=, but if you refuse, you can minimally use:
 #+begin_src emacs-lisp :results silent
   (require 'org-timed-alerts)
-  (org-timed-alerts-mode)
+  (add-hook 'org-mode-hook #'org-timed-alerts-mode)
 #+end_src
 ** Customization
 | Custom variables                   | Description                                                                                                                                                                                                                                                                                                                                  | Default value                                                                                                |
