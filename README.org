@@ -24,30 +24,28 @@ Clone this repository into your load path.
 Use-package declaration with all custom variables set to the default values:
 #+begin_src emacs-lisp :results silent
   (use-package org-timed-alerts
-    :custom ((org-timed-alerts-files (org-agenda-files))
-             (org-timed-alerts-alert-function # 'alert)
-             (org-timed-alerts-default-alert-props nil)
-             (org-timed-alerts-warning-times '(-10 -5))
-             (org-timed-alerts-agenda-hook-p t)
-             (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
-             (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
-                                                     "it is now %current-time\n "
-                                                     "*THIS IS YOUR %warning-time MINUTE WARNING*")))
-    :init 
-    (add-hook 'org-mode-hook #'org-timed-alerts-mode)
-    :after (org))
+    :custom
+    (org-timed-alerts-alert-function # 'alert)
+    (org-timed-alerts-default-alert-props nil)
+    (org-timed-alerts-warning-times '(-10 -5))
+    (org-timed-alerts-agenda-hook-p t)
+    (org-timed-alert-final-alert-string "IT IS %alert-time\n\n%todo %headline")
+    (org-timed-alert-warning-string (concat "%todo %headline\n at %alert-time\n "
+                                            "it is now %current-time\n "
+                                            "*THIS IS YOUR %warning-time MINUTE WARNING*"))
+    :hook org-mode)
+
 #+end_src
 *** Without use-package
 There is no reason not to use =use-package=, but if you refuse:
 #+begin_src emacs-lisp :results silent
-  (eval-after-load 'org-agenda
+t  (eval-after-load 'org-agenda
     '(progn (require 'org-timed-alerts)
             (org-timed-alerts-mode)))
 #+end_src
 ** Customization
 | Custom variables                   | Description                                                                                                                                                                                                                                                                                                                                  | Default value                                                                                                |
 |------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
-| org-timed-alerts-files             | File or Files to scan when gathering events                                                                                                                                                                                                                                                                                                  | (org-agenda-files)                                                                                           |
 | org-timed-alerts-warning-times     | List of integers representing the intervals of warnings preceding the event. E.g., '(-10 -5) means you want to be warned 10 minutes, 5 minutes, and 2 minutes before the event. =nil= means no warning.  There is no difference between positive and negative numbers, i.e., 10 and -10 both mean to send an alert 10 minutes before the event | '(-10 -5)                                                                                                    |
 | org-timed-alert-final-alert-string | Message to display in the alert shown at the time event begins (see below)                                                                                                                                                                                                                                                                   | "IT IS %alert-time\n\nTIME FOR:\n%todo %headline"                                                            |
 | org-timed-alert-warning-string     | Message to be displayed for warnings that precede the event (see below)                                                                                                                                                                                                                                                                      | "%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *" |
@@ -55,7 +53,7 @@ There is no reason not to use =use-package=, but if you refuse:
 
 | Less frequently needed custom variables | Description                                                                                                                                                                                                          | Default value |
 |-----------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------|
-| org-timed-alerts-agenda-hook-p          | Automatically add =org-timed-alerts-set-all-timers= to =org-agenda-hook=?                                                                                                 | t             |
+| org-timed-alerts-agenda-hook-p          | Automatically add =org-timed-alerts-set-all-timers= to =org-agenda-hook=?                                                                                                                                                | t             |
 | org-timed-alerts-default-alert-props    | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can a function which will be called with the point at the org-heading. | nil           |
 | org-timed-alerts-alert-command          | Function to call when invoking the alert. See =alert.el= for other possibilities, e.g., =#'alert-libnotify-notify=, =#'alert-growl-notify=.  Don't touch it unless you have a reason to.                                   | #'alert       |
 *** alert strings
