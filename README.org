@@ -59,7 +59,7 @@ Adding =(org-timed-alerts-mode)= to =org-mode-hook= will activate the alert time
 |-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------|
 | org-timed-alerts-agenda-hook-p          | Automatically add =org-timed-alerts-set-all-timers= to =org-agenda-hook=? If you turn this off, the minor mode is effectively meaningless and you’ll need to find another suitable way to call =org-timed-alerts-set-all-timers=.                          | t             |
 | org-timed-alerts-default-alert-props    | See the documentation for the function =alert=. This plist will be used to set the default for any of those properties.  Any value of this list can be a function which will be called with the point at the org-heading.  See description below.      | nil           |
-| org-timed-alerts-alert-command          | Function to call when invoking the alert. See =alert.el= for other possibilities, e.g., =#'alert-libnotify-notify=, =#'alert-growl-notify=.  Use these specific functions only if you don’t want to use the default alert specific in =alert-default-style=. | #'alert       |
+| org-timed-alerts-alert-command          | Function to call when invoking the alert. See =alert.el= for other possibilities, e.g., =#'alert-libnotify-notify=, =#'alert-growl-notify=.  Use these specific functions only if you don’t want to use the default alert specified in =alert-default-style=. | #'alert       |
 *** alert strings
 =org-timed-alert-final-alert-string= and =org-timed-alert-warning-string= are strings that allow the following substitutions:
 
@@ -82,7 +82,7 @@ For example, consider the heading:
 #+end_src
 The following string:
 =%todo %headline\n at %alert-time\n it is now %current-time\n * THIS IS YOUR %warning-time MINUTE WARNING *=
-Will use these substitutions
+Will use these substitutions when it send a 5 minute warning:
 | string        | substitution                            |
 |---------------+-----------------------------------------|
 | %todo         | "TODO"                                  |
