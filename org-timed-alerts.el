@@ -179,18 +179,19 @@ REPLACEMENT can be a string, a number, symbol, or function. Replace all
 occurrences of %placeholder with replacement and return a new string."
   (cl-loop for (holder . replacement) in map
 	   when replacement
-	   do (setq string (replace-regexp-in-string
-			    (concat "%"
-				    (pcase holder
-				      ((pred symbolp) (symbol-name holder))
-				      ((pred stringp) holder)
-				      ((pred numberp) (number-to-string holder))))
-			    (pcase replacement
-			      ((pred stringp) replacement)
-			      ((pred numberp) (number-to-string replacement))
-			      ((pred functionp) (funcall replacement))
-			      (_ ""))
-			    string))
+	   do (setq string
+		    (replace-regexp-in-string
+		     (concat "%"
+			     (pcase holder
+			       ((pred symbolp) (symbol-name holder))
+			       ((pred stringp) holder)
+			       ((pred numberp) (number-to-string holder))))
+		     (pcase replacement
+		       ((pred stringp) replacement)
+		       ((pred numberp) (number-to-string replacement))
+		       ((pred functionp) (funcall replacement))
+		       (_ ""))
+		     string))
 	   finally return string))
 
 (defun org-timed-alerts--get-default-prop (prop)
@@ -233,9 +234,7 @@ Parses the heading and schedules alert times via
 	for warning-time in (cl-pushnew 0 org-timed-alerts-warning-times)
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
-	(when (ts>
-	       current-time
-	       (ts-now))
+	(when (ts> current-time (ts-now))
 	  (setq current-time (ts-format "%H:%M" current-time))
 	  (org-timed-alerts--add-timer
 	   current-time
