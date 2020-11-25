@@ -24,6 +24,7 @@ Clone this repository into your load path.
 Use-package declaration with all custom variables set to the default values:
 #+begin_src emacs-lisp :results silent
   (use-package org-timed-alerts
+    :after (org)
     :custom
     (org-timed-alerts-alert-function # 'alert)
     (org-timed-alerts-default-alert-props nil)
@@ -42,6 +43,7 @@ There is no reason not to use =use-package=, but if you refuse, you can minimall
   (require 'org-timed-alerts)
   (add-hook 'org-mode-hook #'org-timed-alerts-mode)
 #+end_src
+Adding =(org-timed-alerts-mode)= to =org-mode-hook= will activate the alert timers the next time you run =org-agenda=. It will not add timers until you run =org-agenda=.
 ** Customization
 | Custom variables                   | Description                                                                                                                                                                                                                                                                                                                                  | Default value                                                                                                |
 |------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------|
