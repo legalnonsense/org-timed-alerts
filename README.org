@@ -6,7 +6,7 @@ Ever look at your clock 10 minutes before a scheduled phone call, keep working o
 
 I do it all the time. It must stop. 
 
-=org-timed-alerts= scans your agenda files, finds any timestamps (active, deadline, or scheduled) with a time-of-day specification, and sends event warnings via =alert.el= according to whatever intervals you specifcy with custom alert messages.
+=org-timed-alerts= scans your agenda files, finds any timestamps (active, deadline, or scheduled) with a time-of-day specification, and sends event warnings via =alert.el= according to whatever intervals you specify with custom alert messages.
 
 ** Usage
 *** Install the dependencies:
