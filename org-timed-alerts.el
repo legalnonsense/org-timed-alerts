@@ -118,7 +118,6 @@
 %alert-time   : the time of the event
 %warning-time : the number of minutes before the event the warning will be shown
 %current-time : the time the alert is sent to the user"
-
   :type 'string
   :group 'org-timed-alerts)
 
@@ -171,7 +170,7 @@ the event."
 
 ;;;; Functions
 
-(defun org-timed-alerts--string-substitute (string map)
+(defun org-timed-alerts--string-substitute (string map marker)
   "MAP is an alist in the form of '((PLACEHOLDER . REPLACEMENT))
 STRING is the original string. PLACEHOLDER is a symbol or a string that will
 be converted to a string prefixed with a %: \"%PLACEHOLDER\". 
@@ -189,22 +188,39 @@ occurrences of %placeholder with replacement and return a new string."
 		     (pcase replacement
 		       ((pred stringp) replacement)
 		       ((pred numberp) (number-to-string replacement))
-		       ((pred functionp) (funcall replacement))
+		       ((pred functionp) (org-timed-alerts--run-func-at-point
+					  replacement marker))
 		       (_ ""))
 		     string))
 	   finally return string))
 
-(defun org-timed-alerts--get-default-prop (prop)
+(defun org-timed-alerts--run-func-at-point (func marker)
+  "Call FUNC with point at MARKER."
+  (with-current-buffer (marker-buffer marker)
+    (save-excursion (goto-char (marker-position marker))
+		    (funcall func))))
+
+(defun org-timed-alerts--get-default-prop (prop &optional marker)
   "Get val for PROP from `org-timed-alerts-default-alert-props'.
-If val is a function, call it; otherwise, return val."
+If val is a function, call it with point at MARKER;
+otherwise, return val."
   (let ((val (plist-get
 	      org-timed-alerts-default-alert-props
 	      prop)))
     (if (functionp val)
-	(funcall val)
+	(org-timed-alerts--run-func-at-point val marker)
       val)))
 
-(defun org-timed-alerts--parser ()
+(defun org-timed-alerts--org-ql-action ()
+  "Parsing function to be run as the `org-ql' :action.
+Adds a marker to `org-entry-properties'."
+  (append (org-entry-properties)
+	  `(("MARKER" . ,(copy-marker
+			  (org-element-property
+			   :begin
+			   (org-element-at-point)))))))
+
+(defun org-timed-alerts--parser (entry)
   ":action key for `org-ql-select' which is run at 
 each org heading with a time-of-day timestamp.  
 Parses the heading and schedules alert times via
@@ -214,21 +230,15 @@ Parses the heading and schedules alert times via
 		   "DEADLINE" deadline
 		   "SCHEDULED" scheduled
 		   "TODO" todo
-		   "CATEGORY" category)
-	   (org-entry-properties)))
+		   "CATEGORY" category
+		   "MARKER" marker)
+	   entry))
     (cl-loop
      for time in (list timestamp deadline scheduled)
      when time
      do
      (setq time (ts-parse-org time))
-     ;; `ts' returns 0 for hour and minute even
-     ;; if a timestamp does not have an
-     ;; associated time of day.  We'll assume that
-     ;; if the time is midnight, there is no time of day
-     ;; specification. 
-     (when (and (or (not (= 0 (ts-hour time)))
-		    (not (= 0 (ts-minute time))))
-		(ts> time (ts-now)))
+     (when (ts> time (ts-now))
        (cl-loop
 	with current-time = nil
 	for warning-time in (cl-pushnew 0 org-timed-alerts-warning-times)
@@ -247,12 +257,14 @@ Parses the heading and schedules alert times via
 	      (current-time . ,current-time)
 	      (alert-time . ,(ts-format "%H:%M" time))
 	      (warning-time . ,(abs warning-time))
-	      (category . ,category)))
+	      (category . ,category))
+	    marker)
 	   :title (or (org-timed-alerts--get-default-prop
-		       :title)
-		      category))))))))
+		       :title marker)
+		      category)
+	   marker)))))))
 
-(defun org-timed-alerts--add-timer (time message &optional &key
+(defun org-timed-alerts--add-timer (time message marker &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
@@ -265,29 +277,53 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 	 org-timed-alerts-alert-function
 	 message
 	 :title
-	 (or title (org-timed-alerts--get-default-prop :title))
+	 (or title (org-timed-alerts--get-default-prop :title marker))
 	 :icon
-	 (or icon (org-timed-alerts--get-default-prop :icon))
+	 (or icon (org-timed-alerts--get-default-prop :icon marker))
 	 :category
-	 (or category (org-timed-alerts--get-default-prop :category))
+	 (or category (org-timed-alerts--get-default-prop :category marker))
 	 :buffer
-	 (or buffer (org-timed-alerts--get-default-prop :buffer))
+	 (or buffer (org-timed-alerts--get-default-prop :buffer marker))
 	 :mode
-	 (or mode (org-timed-alerts--get-default-prop :mode))
+	 (or mode (org-timed-alerts--get-default-prop :mode marker))
 	 :data
-	 (or data (org-timed-alerts--get-default-prop :data))
+	 (or data (org-timed-alerts--get-default-prop :data marker))
 	 :style
-	 (or style (org-timed-alerts--get-default-prop :style))
+	 (or style (org-timed-alerts--get-default-prop :style marker))
 	 :severity
-	 (or severity (org-timed-alerts--get-default-prop :severity))
+	 (or severity (org-timed-alerts--get-default-prop :severity marker))
 	 :persistent
-	 (or persistent (org-timed-alerts--get-default-prop :persistent))
+	 (or persistent (org-timed-alerts--get-default-prop :persistent marker))
 	 :never-persist
-	 (or never-persist (org-timed-alerts--get-default-prop :never-persist))
-	 :id (or id (org-timed-alerts--get-default-prop :id)))
+	 (or never-persist (org-timed-alerts--get-default-prop :never-persist marker))
+	 :id (or id (org-timed-alerts--get-default-prop :id marker)))
 	org-timed-alerts--timer-list))
 
 ;;;; Commands
+
+(defun org-timed-alerts-list-timers ()
+  "Print current timers to the message buffer."
+  (interactive)
+  (message 
+   (cl-loop for timer in org-timed-alerts--timer-list
+	    for x from 1 to (length org-timed-alerts--timer-list)
+	    concat (concat "Timer #"
+			   (number-to-string x)
+			   "; set for: "
+			   (let ((time (decode-time (timer--time (car org-timed-alerts--timer-list)))))
+			     (concat
+			      (number-to-string (nth 2 time))
+			      ":"
+			      (number-to-string (nth 1 time))
+			      " on "
+			      (number-to-string (nth 5 time))
+			      "-"
+			      (number-to-string (nth 4 time))
+			      "-"
+			      (number-to-string (nth 3 time))))
+			   "; with message: "
+			   (pp (car (elt timer 6)))
+			   "\n\n"))))
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
@@ -295,11 +331,13 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (interactive)
   (org-timed-alerts-cancel-all-timers)
   ;; Clear the `org-ql' cache
-  ;; (Don't know if necessary but needed for testing.)
-  (setq org-ql-cache (make-hash-table :weakness 'key))
-  (org-ql-select (org-agenda-files)
-    '(ts-active :on today)
-    :action #'org-timed-alerts--parser)
+  ;; (setq org-ql-cache (make-hash-table :weakness 'key))
+  (cl-loop for entry in (org-ql-select (org-agenda-files)
+			  `(ts-active :from ,(ts-format "%Y-%m-%d" (ts-now))
+				      :to ,(ts-format "%Y-%m-%d"
+						      (ts-adjust 'day 1 (ts-now))))
+			  :action #'org-timed-alerts--org-ql-action)
+	   do (org-timed-alerts--parser entry))
   (message "Org-timed-alerts: timers updated."))
 
 ;;;###autoload 
