@@ -98,6 +98,16 @@ And will display a warning that looks like this:
 [[./images/sample-alert.png]]
 
 Unless the =:title= property is overridden by =org-timed-alerts-default-alert-props=, the title of an alert defaults to the =category= property of the org heading.
+** Special property for custom alert intervals
+Any heading can set custom alert intervals by setting the property =:ORG-TIMED-ALERTS:= For example:
+#+begin_src org
+* Lunch meeting
+:PROPERTIES:
+:ORG-TIMED-ALERTS: 5 4 3 2 1
+:END:
+<2020-11-29 Sun 11:36>
+#+end_src
+Will override =org-timed-alerts-warning-times= and send alert notifications 5, 4, 3, 2, and 1 minute before the appointment time. 
 ** Note about =org-timed-alerts-default-alert-props=
 As stated above, the value of any property can be a function that is run at the underlying org heading. If you want more advanced customization of the alert properties, you can take advantage of this. For example, suppose you wanted the title of each alert to show the text of the root heading in the tree:
 #+begin_src emacs-lisp :results silent
@@ -133,5 +143,5 @@ This pacakge is meant to do what I want and and nothing more; I tried to abstrac
 
 =org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el. Org-notify allows notifications to be scheduled and customized, but requires a special property to be set for each org heading for which an alert is desired. It also does not seem to use =alert.el= by default but appears it could be customized to do so. There are a lot of nice customization options here, but it asks a lot of the user with regard to setting special properties. By contrast, the goal of =org-timed-alerts= is to stay out of the way of the user by not requiring setting any special properties. In short, I feared getting this package set up for my purposes would be less enjoyable than writing a custom solution. 
 
-=org-wild-notifier=. /See/ https://github.com/akhramov/org-wild-notifier.el. Org-wild-notifier is the closest to =org-timed-alerts=. The biggest drawback I saw was the inability to customize the alert message. /See/ https://github.com/akhramov/org-wild-notifier.el/issues/43. Otherwise, this package may serve your purposes. 
+=org-wild-notifier=. /See/ https://github.com/akhramov/org-wild-notifier.el. Org-wild-notifier is the closest to =org-timed-alerts=. The biggest drawback I saw was the inability to customize the alert message. /See/ /https://github.com/akhramov/org-wild-notifier.el/issues/43. Otherwise, this package may serve your purposes. 
 
