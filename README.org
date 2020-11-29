@@ -127,12 +127,11 @@ Or suppose you wanted to customize the icon for an alert depending on the priori
     2. Create warning timers according to the intervals specified in =org-timed-alerts-warning-times= and using the string =org-timed-alert-warning-string=
  3. Update all timers any time the user runs =org-agenda=. You can update manually with =org-timed-alerts-set-all-timers=. You can disable all timers with =org-timed-alerts-cancel-all-timers= or by disabling the minor mode. 
 * Other efforts
-This pacakge is meant to do what I want and and nothing more; I tried to abstract a bit so others might find it useful. 
+This pacakge is meant to do what I want and and nothing more; I tried to abstract a bit so others might find it useful. I have included my notes on other similar packages. Apologies to the authors if they are not accurate. 
 
-It is possible that these packages provide this (or additional) functionality. I did not spend much time with them before striking out on my own. They may be more suitable for your purposes:
+=org-alert=. /See/ https://github.com/spegoraro/org-alert. Org-alert checks for items which are scheduled or with deadlines for the current date, and then sends notification of those items immediately and simultaneously. It will resend notifications if you run =org-alert-check=. It serves a different purpose than this package. 
 
-=org-alert=. /See/ https://github.com/spegoraro/org-alert.
+=org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el. Org-notify allows notifications to be scheduled and customized, but requires a special property to be set for each org heading for which an alert is desired. It also does not seem to use =alert.el= by default but appears it could be customized to do so. There are a lot of nice customization options here, but it asks a lot of the user with regard to setting special properties. By contrast, the goal of =org-timed-alerts= is to stay out of the way of the user by not requiring setting any special properties. In short, I feared getting this package set up for my purposes would be less enjoyable than writing a custom solution. 
 
-=org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el.
+=org-wild-notifier=. /See/ https://github.com/akhramov/org-wild-notifier.el. Org-wild-notifier is the closest to =org-timed-alerts=. The biggest drawback I saw was the inability to customize the alert message. /See/ https://github.com/akhramov/org-wild-notifier.el/issues/43. Otherwise, this package may serve your purposes. 
 
-=org-wild-notify=. /See/ https://github.com/akhramov/org-wild-notifier.el.
