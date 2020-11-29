@@ -280,6 +280,9 @@ Parses the heading and schedules alert times via
 `org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
 MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (push (run-at-time
+	 ;; `run-at-time' only accepts times associated with the
+	 ;; current day.  Ohterwise, we have to convert the
+	 ;; future time to seconds. 
 	 (ts-difference time (ts-now))
 	 nil
 	 org-timed-alerts-alert-function
