@@ -92,6 +92,12 @@
   :group 'org-timed-alerts
   :prefix "org-timed-alerts-")
 
+(defcustom org-timed-alerts-files nil
+  "If nil, use (org-agenda-files). Otherwise, specify a file or list 
+of files to search for events."
+  :type 'list
+  :group 'org-timed-alerts)
+
 (defcustom org-timed-alerts-alert-function #'alert
   "Alert function. Default is #'alert. See `alert' for more possibilities."
   :type 'function
@@ -195,12 +201,12 @@ occurrences of %placeholder with replacement and return a new string."
 	   finally return string))
 
 (defun org-timed-alerts--run-func-at-point (func marker)
-  "Call FUNC with point at MARKER."
+  "Call FUNC with point at MARKER."  
   (with-current-buffer (marker-buffer marker)
     (save-excursion (goto-char (marker-position marker))
 		    (funcall func))))
 
-(defun org-timed-alerts--get-default-prop (prop &optional marker)
+(defun org-timed-alerts--get-default-prop (prop marker)
   "Get val for PROP from `org-timed-alerts-default-alert-props'.
 If val is a function, call it with point at MARKER;
 otherwise, return val."
@@ -336,13 +342,15 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   "Run `org-ql' query to get all headings with today's timestamp."
   (interactive)
   (org-timed-alerts-cancel-all-timers)
-  ;; Clear the `org-ql' cache
-  ;; (setq org-ql-cache (make-hash-table :weakness 'key))
-  (cl-loop for entry in (org-ql-select (org-agenda-files)
-			  `(ts-active :on today)
-			  ;; :from ,(ts-format "%Y-%m-%d" (ts-now))
-			  ;; :to ,(ts-format "%Y-%m-%d"
-			  ;; 		      (ts-adjust 'day 1 (ts-now))))
+  (cl-loop for entry in (org-ql-select (or org-timed-alerts-files
+					   (org-agenda-files))
+			  `(ts-active
+			    ;; Get timestamps for the current date
+			    ;; and following date, to ensure events
+			    ;; after midnight are captured. 
+			    :from ,(ts-format "%Y-%m-%d" (ts-now))
+			    :to ,(ts-format "%Y-%m-%d"
+					    (ts-adjust 'day 1 (ts-now))))
 			  :action #'org-timed-alerts--org-ql-action)
 	   do (org-timed-alerts--parser entry))
   (message "Org-timed-alerts: timers updated."))
