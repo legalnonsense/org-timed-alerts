@@ -8,6 +8,8 @@ I do it all the time. It must stop.
 
 =org-timed-alerts= scans your agenda files, finds any timestamps (active, deadline, or scheduled) with a time-of-day specification, and sends event warnings via =alert.el= according to whatever intervals you specify with custom alert messages.
 
+WARNING: This package is under development. It is close to complete and stable for my daily use. 
+
 ** Usage
 *** Install the dependencies:
 - alert :: https://github.com/jwiegley/alert.
