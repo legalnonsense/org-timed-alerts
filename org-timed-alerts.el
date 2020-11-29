@@ -238,7 +238,8 @@ Parses the heading and schedules alert times via
      when time
      do
      (setq time (ts-parse-org time))
-     (when (ts> time (ts-now))
+     (when (and (ts> time (ts-now))
+		(ts< time (ts-adjust 'day 1 (ts-now))))
        (cl-loop
 	with current-time = nil
 	for warning-time in (cl-pushnew 0 org-timed-alerts-warning-times)
@@ -247,7 +248,7 @@ Parses the heading and schedules alert times via
 	(when (ts> current-time (ts-now))
 	  (setq current-time (ts-format "%H:%M" current-time))
 	  (org-timed-alerts--add-timer
-	   current-time
+	   (ts-adjust 'minute (* -1 (abs warning-time)) time)
 	   (org-timed-alerts--string-substitute
 	    (if (= warning-time 0)
 		org-timed-alerts-final-alert-string
@@ -259,10 +260,11 @@ Parses the heading and schedules alert times via
 	      (warning-time . ,(abs warning-time))
 	      (category . ,category))
 	    marker)
+	   marker
 	   :title (or (org-timed-alerts--get-default-prop
 		       :title marker)
-		      category)
-	   marker)))))))
+		      category))))))))
+
 
 (defun org-timed-alerts--add-timer (time message marker &optional &key
 					 title icon category buffer mode
@@ -272,7 +274,7 @@ Parses the heading and schedules alert times via
 `org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
 MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (push (run-at-time
-	 time
+	 (ts-difference time (ts-now))
 	 nil
 	 org-timed-alerts-alert-function
 	 message
@@ -302,7 +304,7 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 ;;;; Commands
 
 (defun org-timed-alerts-list-timers ()
-  "Print current timers to the message buffer."
+  "Print list of active timers to the message buffer."
   (interactive)
   (message 
    (cl-loop for timer in org-timed-alerts--timer-list
@@ -310,20 +312,24 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 	    concat (concat "Timer #"
 			   (number-to-string x)
 			   "; set for: "
-			   (let ((time (decode-time (timer--time (car org-timed-alerts--timer-list)))))
-			     (concat
-			      (number-to-string (nth 2 time))
-			      ":"
-			      (number-to-string (nth 1 time))
-			      " on "
-			      (number-to-string (nth 5 time))
-			      "-"
-			      (number-to-string (nth 4 time))
-			      "-"
-			      (number-to-string (nth 3 time))))
-			   "; with message: "
-			   (pp (car (elt timer 6)))
-			   "\n\n"))))
+	    (let ((time
+		   (decode-time
+		    (timer--time
+		     timer))))
+	      (concat
+	       (number-to-string (nth 2 time))
+	       ":"
+	       (s-pad-left 2 "0"
+			   (number-to-string (nth 1 time)))
+	       " on "
+	       (number-to-string (nth 5 time))
+	       "-"
+	       (number-to-string (nth 4 time))
+	       "-"
+	       (number-to-string (nth 3 time))))
+	    "; with message: "
+	    (pp (car (elt timer 6)))
+	    "\n\n"))))
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
@@ -333,9 +339,10 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   ;; Clear the `org-ql' cache
   ;; (setq org-ql-cache (make-hash-table :weakness 'key))
   (cl-loop for entry in (org-ql-select (org-agenda-files)
-			  `(ts-active :from ,(ts-format "%Y-%m-%d" (ts-now))
-				      :to ,(ts-format "%Y-%m-%d"
-						      (ts-adjust 'day 1 (ts-now))))
+			  `(ts-active :on today)
+			  ;; :from ,(ts-format "%Y-%m-%d" (ts-now))
+			  ;; :to ,(ts-format "%Y-%m-%d"
+			  ;; 		      (ts-adjust 'day 1 (ts-now))))
 			  :action #'org-timed-alerts--org-ql-action)
 	   do (org-timed-alerts--parser entry))
   (message "Org-timed-alerts: timers updated."))
