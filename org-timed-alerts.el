@@ -1,4 +1,3 @@
-
 ;;; org-timed-alerts.el --- Automatiic org timers for upcoming events -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Jeff Filipovits
@@ -45,8 +44,12 @@
 ;; Then put this file in your load-path, and put this in your init
 ;; file. See the README for a use-package declaration. 
 
-;;   (eval-after-load 'org
-;;     '(progn (require 'org-timed-alerts)))
+;;     (require 'org-timed-alerts)
+
+;;     Then: 
+;;     (org-timed-alerts-mode)
+;;     Or, add a hook:
+;;     (add-hook 'org-mode-hook #'org-timed-alerts-mode)
 
 ;;;; Usage
 
@@ -226,29 +229,40 @@ Adds a marker to `org-entry-properties'."
 			   :begin
 			   (org-element-at-point)))))))
 
+(defun org-timed-alerts--has-time-of-day-p (timestamp)
+  "Does TIMESTAMP contain a time of day specification?"
+  (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}>" timestamp))
+
 (defun org-timed-alerts--parser (entry)
   ":action key for `org-ql-select' which is run at 
-each org heading with a time-of-day timestamp.  
-Parses the heading and schedules alert times via
- `org-timed-alerts--add-timer'."
-  (-let* (((&alist "ITEM" headline
-		   "TIMESTAMP" timestamp
-		   "DEADLINE" deadline
-		   "SCHEDULED" scheduled
-		   "TODO" todo
-		   "CATEGORY" category
-		   "MARKER" marker)
-	   entry))
+     each org heading with a time-of-day timestamp.  
+     Parses the heading and schedules alert times via
+     `org-timed-alerts--add-timer'."
+  (-let (((&alist "ITEM" headline
+		  "TIMESTAMP" timestamp
+		  "DEADLINE" deadline
+		  "SCHEDULED" scheduled
+		  "TODO" todo
+		  "CATEGORY" category
+		  "MARKER" marker
+		  "ORG-TIMED-ALERTS" custom-alert-intervals)
+	  entry))
+    (when custom-alert-intervals
+      (setq custom-alert-intervals
+	    (mapcar #'string-to-number (split-string custom-alert-intervals))))
     (cl-loop
      for time in (list timestamp deadline scheduled)
-     when time
+     when (and time (org-timed-alerts--has-time-of-day-p time))
      do
      (setq time (ts-parse-org time))
      (when (and (ts> time (ts-now))
 		(ts< time (ts-adjust 'day 1 (ts-now))))
        (cl-loop
 	with current-time = nil
-	for warning-time in (cl-pushnew 0 org-timed-alerts-warning-times)
+	;; 0 means send an alert at the time of the event
+	for warning-time in (append '(0)
+				    (or custom-alert-intervals
+					org-timed-alerts-warning-times))
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
 	(when (ts> current-time (ts-now))
@@ -271,14 +285,13 @@ Parses the heading and schedules alert times via
 		       :title marker)
 		      category))))))))
 
-
 (defun org-timed-alerts--add-timer (time message marker &optional &key
 					 title icon category buffer mode
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add them to 
-`org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
-MESSAGE is the alert body. Optional keys are those accepted by `alert'."
+     `org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
+     MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (push (run-at-time
 	 ;; `run-at-time' only accepts times associated with the
 	 ;; current day.  Ohterwise, we have to convert the
@@ -321,24 +334,24 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
 	    concat (concat "Timer #"
 			   (number-to-string x)
 			   "; set for: "
-	    (let ((time
-		   (decode-time
-		    (timer--time
-		     timer))))
-	      (concat
-	       (number-to-string (nth 2 time))
-	       ":"
-	       (s-pad-left 2 "0"
-			   (number-to-string (nth 1 time)))
-	       " on "
-	       (number-to-string (nth 5 time))
-	       "-"
-	       (number-to-string (nth 4 time))
-	       "-"
-	       (number-to-string (nth 3 time))))
-	    "; with message: "
-	    (pp (car (elt timer 6)))
-	    "\n\n"))))
+     (let ((time
+	    (decode-time
+	     (timer--time
+	      timer))))
+       (concat
+	(number-to-string (nth 2 time))
+	":"
+	(s-pad-left 2 "0"
+		    (number-to-string (nth 1 time)))
+	" on "
+	(number-to-string (nth 5 time))
+	"-"
+	(number-to-string (nth 4 time))
+	"-"
+	(number-to-string (nth 3 time))))
+     "; with message: "
+     (pp (car (elt timer 6)))
+     "\n\n"))))
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
