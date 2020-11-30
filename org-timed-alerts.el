@@ -155,7 +155,8 @@ to the root heading, you could use:
 	       (while (org-up-heading-safe))
 	       (org-get-heading t t t t)))
 
-Which moves up to the root header and returns that headline."
+Which moves up to the root header and sets the value of 
+:title to that headline."
   :type '(plist :key-type symbol :value-type sexp)
   :group 'org-timed-alerts)
 
