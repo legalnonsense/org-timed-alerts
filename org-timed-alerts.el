@@ -232,7 +232,8 @@ an alist."
 
 (defun org-timed-alerts--has-time-of-day-p (timestamp)
   "Does TIMESTAMP contain a time of day specification?"
-  (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}>" timestamp))
+  (when timestamp
+    (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}>" timestamp)))
 
 (defun org-timed-alerts--parser (entry)
   ":action key for `org-ql-select' which is run at 
