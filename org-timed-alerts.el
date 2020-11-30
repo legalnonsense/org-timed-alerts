@@ -262,10 +262,10 @@ an alist."
        (cl-loop
 	with current-time = nil
 	;; 0 means send an alert at the time of the event
-	for warning-time in (-snoc
-			     (or custom-alert-intervals
-				 org-timed-alerts-warning-times)
-			     0)
+	for warning-time in (-unique (-snoc
+				      (or custom-alert-intervals
+					  org-timed-alerts-warning-times)
+				      0))
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
 	(when (ts> current-time (ts-now))
