@@ -222,7 +222,8 @@ otherwise, return val."
 
 (defun org-timed-alerts--org-ql-action ()
   "Parsing function to be run as the `org-ql' :action.
-Adds a marker to `org-entry-properties'."
+Adds a marker to `org-entry-properties' and returns 
+an alist."
   (append (org-entry-properties)
 	  `(("MARKER" . ,(copy-marker
 			  (org-element-property
