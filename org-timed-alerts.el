@@ -262,16 +262,17 @@ an alist."
        (cl-loop
 	with current-time = nil
 	;; 0 means send an alert at the time of the event
-	for warning-time in (-unique (-snoc
-				      (or custom-alert-intervals
-					  org-timed-alerts-warning-times)
-				      0))
+	for warning-time in (-distinct (-snoc
+					(or custom-alert-intervals
+					    org-timed-alerts-warning-times)
+					0))
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
 	(when (ts> current-time (ts-now))
 	  (setq current-time (ts-format "%H:%M" current-time))
 	  (org-timed-alerts--add-timer
 	   (ts-adjust 'minute (* -1 (abs warning-time)) time)
+	   ;; Create the message string
 	   (org-timed-alerts--string-substitute
 	    (if (= warning-time 0)
 		org-timed-alerts-final-alert-string
