@@ -237,10 +237,8 @@ an alist."
     (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}>" timestamp)))
 
 (defun org-timed-alerts--parser (entry)
-  ":action key for `org-ql-select' which is run at 
-     each org heading with a time-of-day timestamp.  
-     Parses the heading and schedules alert times via
-     `org-timed-alerts--add-timer'."
+  "Process data from `org-ql' query and create
+timers by calling `org-timed-alerts--add-timer'."
   (-let (((&alist "ITEM" headline
 		  "TIMESTAMP" timestamp
 		  "DEADLINE" deadline
