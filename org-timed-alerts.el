@@ -246,7 +246,7 @@ TIMESTAMP is string in the form of an org timestamp."
 (defun org-timed-alerts--update-repeated-event (timestamp-string)
   "If TIMESTAMP-STRING has a repeat, update according to the 
 repeat interval to show the next occurrence and return a
-an org time string with the new date."
+an TS object the new date."
   (when-let* ((repeat (org-get-repeat timestamp-string))
 	      (amount (string-to-number
 		       (if (= (length repeat) 4)
