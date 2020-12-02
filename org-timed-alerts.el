@@ -283,17 +283,23 @@ timers by calling `org-timed-alerts--add-timer'."
      for time in (list timestamp deadline scheduled)
      when (and time (org-timed-alerts--has-time-of-day-p time))
      do
+     ;; If the timestamp repeats, updated it and convert to ts,
+     ;; otherwise, just convert it.
      (if (org-get-repeat time)
 	 (setq time (org-timed-alerts--update-repeated-event time))
        (setq time (ts-parse-org time)))
+     ;; Make sure the timestamp is between now and tomorrow 
      (when (and (ts> time (ts-now))
 		(ts< time (ts-adjust 'day 1 (ts-now))))
        (cl-loop
 	with current-time = nil
-	;; 0 means send an alert at the time of the event
+	;; Make sure there are no duplicates in the warning
+	;; intervals.
 	for warning-time in (-distinct (-snoc
 					(or custom-alert-intervals
 					    org-timed-alerts-warning-times)
+					;; 0 means send an alert at the
+					;; time of the event
 					0))
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
