@@ -178,6 +178,12 @@ the event."
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
 
+;;;; Org-ql predicate
+
+(org-ql--defpred ts-repeat ()
+  "Find entries with timestamp repeats"
+  :body (org-get-repeat))
+
 ;;;; Functions
 
 (defun org-timed-alerts--string-substitute (string map marker)
