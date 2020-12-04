@@ -146,3 +146,4 @@ This pacakge is meant to do what I want and and nothing more; I tried to abstrac
 =org-wild-notifier=. /See/ https://github.com/akhramov/org-wild-notifier.el. Org-wild-notifier is the closest to =org-timed-alerts=. The biggest drawback I saw was the inability to customize the alert message. /See/ /https://github.com/akhramov/org-wild-notifier.el/issues/43. Otherwise, this package may serve your purposes. 
 * Changelog
 - [2020-12-03 Thu] Add support for repeating timestamps
+- [2020-12-04 Fri] Add support for excluding TODO states in =org-timed-alerts-todo-exclusions=
