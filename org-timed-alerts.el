@@ -173,6 +173,12 @@ the event."
   :type '(list integer)
   :group 'org-timed-alerts)
 
+(defcustom org-timed-alerts-todo-exclusions '()
+  "If a heading has any of these TODO states, do not schedule it for
+an alert."
+  :type '(list)
+  :group 'org-timed-alerts)
+
 ;;;; Variables
 
 (defvar org-timed-alerts--timer-list nil
@@ -329,8 +335,8 @@ timers by calling `org-timed-alerts--add-timer'."
 					 severity data style persistent
 					 never-persist id)
   "Create timers via `run-at-time' and add them to 
-     `org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
-     MESSAGE is the alert body. Optional keys are those accepted by `alert'."
+`org-timed-alerts--timer-list'.  TIME is the time to run the alert. 
+MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (push (run-at-time
 	 ;; `run-at-time' only accepts times associated with the
 	 ;; current day.  Ohterwise, we have to convert the
@@ -373,24 +379,24 @@ timers by calling `org-timed-alerts--add-timer'."
 	    concat (concat "Timer #"
 			   (number-to-string x)
 			   "; set for: "
-     (let ((time
-	    (decode-time
-	     (timer--time
-	      timer))))
-       (concat
-	(number-to-string (nth 2 time))
-	":"
-	(s-pad-left 2 "0"
-		    (number-to-string (nth 1 time)))
-	" on "
-	(number-to-string (nth 5 time))
-	"-"
-	(number-to-string (nth 4 time))
-	"-"
-	(number-to-string (nth 3 time))))
-     "; with message: "
-     (pp (car (elt timer 6)))
-     "\n\n"))))
+(let ((time
+       (decode-time
+	(timer--time
+	 timer))))
+  (concat
+   (number-to-string (nth 2 time))
+   ":"
+   (s-pad-left 2 "0"
+	       (number-to-string (nth 1 time)))
+   " on "
+   (number-to-string (nth 5 time))
+   "-"
+   (number-to-string (nth 4 time))
+   "-"
+   (number-to-string (nth 3 time))))
+"; with message: "
+(pp (car (elt timer 6)))
+"\n\n"))))
 
 ;;;###autoload 
 (defun org-timed-alerts-set-all-timers ()
@@ -399,15 +405,15 @@ timers by calling `org-timed-alerts--add-timer'."
   (org-timed-alerts-cancel-all-timers)
   (cl-loop for entry in (org-ql-select (or org-timed-alerts-files
 					   (org-agenda-files))
-			  `(or
-			    (ts-repeat)
-			    (ts-active
-			     ;; Get timestamps for the current date
-			     ;; and following date, to ensure events
-			     ;; after midnight are captured. 
-			     :from ,(ts-format "%Y-%m-%d" (ts-now))
-			     :to ,(ts-format "%Y-%m-%d"
-					     (ts-adjust 'day 1 (ts-now)))))
+			  `(and
+			    (or (ts-repeat) (ts-active
+					     ;; Get timestamps for the current date
+					     ;; and following date, to ensure events
+					     ;; after midnight are captured. 
+					     :from ,(ts-format "%Y-%m-%d" (ts-now))
+					     :to ,(ts-format "%Y-%m-%d"
+							     (ts-adjust 'day 1 (ts-now)))))
+			    (not (todo ,@org-timed-alerts-todo-exclusions)))
 			  :action #'org-timed-alerts--org-ql-action)
 	   do (org-timed-alerts--parser entry))
   (message "Org-timed-alerts: timers updated."))
