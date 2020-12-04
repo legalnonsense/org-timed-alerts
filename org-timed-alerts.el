@@ -406,13 +406,11 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   (cl-loop for entry in (org-ql-select (or org-timed-alerts-files
 					   (org-agenda-files))
 			  `(and
-			    (or (ts-repeat) (ts-active
-					     ;; Get timestamps for the current date
-					     ;; and following date, to ensure events
-					     ;; after midnight are captured. 
-					     :from ,(ts-format "%Y-%m-%d" (ts-now))
-					     :to ,(ts-format "%Y-%m-%d"
-							     (ts-adjust 'day 1 (ts-now)))))
+			    (or (ts-repeat)
+				(ts-active
+				 :from ,(ts-format "%Y-%m-%d" (ts-now))
+				 :to ,(ts-format "%Y-%m-%d"
+						 (ts-adjust 'day 1 (ts-now)))))
 			    (not (todo ,@org-timed-alerts-todo-exclusions)))
 			  :action #'org-timed-alerts--org-ql-action)
 	   do (org-timed-alerts--parser entry))
