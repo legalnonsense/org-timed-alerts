@@ -144,10 +144,5 @@ This pacakge is meant to do what I want and and nothing more; I tried to abstrac
 =org-notify=. /See/ https://code.orgmode.org/bzg/org-mode/raw/master/contrib/lisp/org-notify.el. Org-notify allows notifications to be scheduled and customized, but requires a special property to be set for each org heading for which an alert is desired. It also does not seem to use =alert.el= by default but appears it could be customized to do so. There are a lot of nice customization options here, but it asks a lot of the user with regard to setting special properties. By contrast, the goal of =org-timed-alerts= is to stay out of the way of the user by not requiring setting any special properties. In short, I feared getting this package set up for my purposes would be less enjoyable than writing a custom solution. 
 
 =org-wild-notifier=. /See/ https://github.com/akhramov/org-wild-notifier.el. Org-wild-notifier is the closest to =org-timed-alerts=. The biggest drawback I saw was the inability to customize the alert message. /See/ /https://github.com/akhramov/org-wild-notifier.el/issues/43. Otherwise, this package may serve your purposes. 
-<<<<<<< HEAD
 * Changelog
 - [2020-12-03 Thu] Add support for repeating timestamps
-=======
-* Change log
-** [2020-12-03 Thu] Add support for repeated timestamps
->>>>>>> repeat
