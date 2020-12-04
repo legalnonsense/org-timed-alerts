@@ -155,7 +155,8 @@ to the root heading, you could use:
 	       (while (org-up-heading-safe))
 	       (org-get-heading t t t t)))
 
-Which moves up to the root header and returns that headline."
+Which moves up to the root header and sets the value of 
+:title to that headline."
   :type '(plist :key-type symbol :value-type sexp)
   :group 'org-timed-alerts)
 
@@ -176,6 +177,12 @@ the event."
 
 (defvar org-timed-alerts--timer-list nil
   "Internal list of timer objects.")
+
+;;;; Org-ql predicate
+
+(org-ql--defpred ts-repeat ()
+  "Find entries with timestamp repeats"
+  :body (org-get-repeat))
 
 ;;;; Functions
 
@@ -231,15 +238,35 @@ an alist."
 			   (org-element-at-point)))))))
 
 (defun org-timed-alerts--has-time-of-day-p (timestamp)
-  "Does TIMESTAMP contain a time of day specification?"
+  "Does TIMESTAMP contain a time of day specification?
+TIMESTAMP is string in the form of an org timestamp."
   (when timestamp
-    (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}>" timestamp)))
+    (string-match "[[:digit:]]\\{2\\}:[[:digit:]]\\{2\\}.*>" timestamp)))
+
+(defun org-timed-alerts--update-repeated-event (timestamp-string)
+  "If TIMESTAMP-STRING has a repeat, update according to the 
+repeat interval to show the next occurrence and return a
+an TS object the new date."
+  (when-let* ((repeat (org-get-repeat timestamp-string))
+	      (amount (string-to-number
+		       (if (= (length repeat) 4)
+			   (substring repeat 1 -1)
+			 (substring repeat 0 -1))))
+	      (unit (pcase (substring repeat -1)
+		      ("w" (prog1 'day
+			     (setq amount (* 7 amount))))
+		      ("h" 'hour)
+		      ("m" 'month)
+		      ("d" 'day)
+		      ("y" 'year)))
+	      (timestamp (ts-parse-org timestamp-string)))
+    (while (ts< timestamp (ts-now))
+      (setq timestamp (ts-adjust unit amount timestamp)))
+    timestamp))
 
 (defun org-timed-alerts--parser (entry)
-  ":action key for `org-ql-select' which is run at 
-     each org heading with a time-of-day timestamp.  
-     Parses the heading and schedules alert times via
-     `org-timed-alerts--add-timer'."
+  "Process data from `org-ql' query and create
+timers by calling `org-timed-alerts--add-timer'."
   (-let (((&alist "ITEM" headline
 		  "TIMESTAMP" timestamp
 		  "DEADLINE" deadline
@@ -256,15 +283,23 @@ an alist."
      for time in (list timestamp deadline scheduled)
      when (and time (org-timed-alerts--has-time-of-day-p time))
      do
-     (setq time (ts-parse-org time))
+     ;; If the timestamp repeats, updated it and convert to ts,
+     ;; otherwise, just convert it.
+     (if (org-get-repeat time)
+	 (setq time (org-timed-alerts--update-repeated-event time))
+       (setq time (ts-parse-org time)))
+     ;; Make sure the timestamp is between now and tomorrow 
      (when (and (ts> time (ts-now))
 		(ts< time (ts-adjust 'day 1 (ts-now))))
        (cl-loop
 	with current-time = nil
-	;; 0 means send an alert at the time of the event
+	;; Make sure there are no duplicates in the warning
+	;; intervals.
 	for warning-time in (-distinct (-snoc
 					(or custom-alert-intervals
 					    org-timed-alerts-warning-times)
+					;; 0 means send an alert at the
+					;; time of the event
 					0))
 	do
 	(setq current-time (ts-adjust 'minute (* -1 (abs warning-time)) time))
@@ -364,13 +399,15 @@ an alist."
   (org-timed-alerts-cancel-all-timers)
   (cl-loop for entry in (org-ql-select (or org-timed-alerts-files
 					   (org-agenda-files))
-			  `(ts-active
-			    ;; Get timestamps for the current date
-			    ;; and following date, to ensure events
-			    ;; after midnight are captured. 
-			    :from ,(ts-format "%Y-%m-%d" (ts-now))
-			    :to ,(ts-format "%Y-%m-%d"
-					    (ts-adjust 'day 1 (ts-now))))
+			  `(or
+			    (ts-repeat)
+			    (ts-active
+			     ;; Get timestamps for the current date
+			     ;; and following date, to ensure events
+			     ;; after midnight are captured. 
+			     :from ,(ts-format "%Y-%m-%d" (ts-now))
+			     :to ,(ts-format "%Y-%m-%d"
+					     (ts-adjust 'day 1 (ts-now)))))
 			  :action #'org-timed-alerts--org-ql-action)
 	   do (org-timed-alerts--parser entry))
   (message "Org-timed-alerts: timers updated."))

@@ -3,3 +3,7 @@
 /#README.org#
 /org-timed-alerts.elc
 /.#org-timed-alerts.el
+/#ert-tests.el#
+/#repeaters.el#
+/ert-tests.el
+/repeaters.el
