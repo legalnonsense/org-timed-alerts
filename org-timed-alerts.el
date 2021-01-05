@@ -165,6 +165,11 @@ Which moves up to the root header and sets the value of
   :type 'boolean
   :group 'org-timed-alerts)
 
+(defcustom org-timed-alerts-refile-hook-p nil
+  "Update all alerts whenever you refile an org entry?"
+  :type 'boolean
+  :group 'org-timed-alerts)
+
 (defcustom org-timed-alerts-warning-times '(-10 -5)
   "List of minutes before an event when a warning will be sent.
 There is no difference between positive and negative values,
@@ -431,10 +436,14 @@ MESSAGE is the alert body. Optional keys are those accepted by `alert'."
   " alerts"
   nil
   (if org-timed-alerts-mode
-      (when org-timed-alerts-agenda-hook-p
-	(add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+      (progn 
+	(when org-timed-alerts-agenda-hook-p
+	  (add-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers))
+	(when org-timed-alerts-refile-hook-p
+	  (add-hook 'org-after-refile-insert-hook #'org-timed-alerts-set-all-timers)))
     (org-timed-alerts-cancel-all-timers)
-    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)))
+    (remove-hook 'org-agenda-mode-hook #'org-timed-alerts-set-all-timers)
+    (remove-hook 'org-after-refile-insert-hook #'org-timed-alerts-set-all-timers)))
   
 ;;;; Footer
 
