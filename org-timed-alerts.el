@@ -191,9 +191,15 @@ an alert."
 
 ;;;; Org-ql predicate
 
-(org-ql--defpred ts-repeat ()
-  "Find entries with timestamp repeats"
-  :body (org-get-repeat))
+;; `org-ql' recently renamed `org-ql--defpred'
+;; to `org-ql-defpred'
+(if (fboundp 'org-ql--defpred)
+    (org-ql--defpred ts-repeat ()
+      "Find entries with timestamp repeats"
+      :body (org-get-repeat))
+  (org-ql-defpred ts-repeat ()
+		  "Find entries with timestamp repeats"
+		  :body (org-get-repeat)))
 
 ;;;; Functions
 
