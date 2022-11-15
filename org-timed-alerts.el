@@ -195,11 +195,11 @@ an alert."
 ;; to `org-ql-defpred'
 (if (fboundp 'org-ql--defpred)
     (org-ql--defpred ts-repeat ()
-      "Find entries with timestamp repeats"
-      :body (org-get-repeat))
+		     "Find entries with timestamp repeats"
+		     :body (org-get-repeat))
   (org-ql-defpred ts-repeat ()
-		  "Find entries with timestamp repeats"
-		  :body (org-get-repeat)))
+    "Find entries with timestamp repeats"
+    :body (org-get-repeat)))
 
 ;;;; Functions
 
@@ -230,8 +230,9 @@ occurrences of %placeholder with replacement and return a new string."
 (defun org-timed-alerts--run-func-at-point (func marker)
   "Call FUNC with point at MARKER."  
   (with-current-buffer (marker-buffer marker)
-    (save-excursion (goto-char (marker-position marker))
-		    (funcall func))))
+    (org-with-wide-buffer 
+     (save-excursion (goto-char (marker-position marker))
+		     (funcall func)))))
 
 (defun org-timed-alerts--get-default-prop (prop marker)
   "Get val for PROP from `org-timed-alerts-default-alert-props'.
